@@ -1,0 +1,69 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int       @id @default(autoincrement())
+  email        String    @unique
+  passwordHash String
+  displayName  String
+  createdAt    DateTime  @default(now())
+  playlists    Playlist[]
+  favorites    UserFavoriteArtist[]
+}
+
+model Artist {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  tracks    Track[]
+  favoritedBy UserFavoriteArtist[]
+}
+
+model Track {
+  id          Int             @id @default(autoincrement())
+  title       String
+  popularity  Int             @default(0)
+  durationSec Int             @default(0)
+  audioPath   String
+  artistId    Int
+  artist      Artist          @relation(fields: [artistId], references: [id], onDelete: Cascade)
+  playlists   PlaylistTrack[]
+
+  @@index([artistId, popularity])
+}
+
+model Playlist {
+  id          Int             @id @default(autoincrement())
+  name        String
+  userId      Int
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  isStarter   Boolean         @default(false)
+  createdAt   DateTime        @default(now())
+  tracks      PlaylistTrack[]
+}
+
+model PlaylistTrack {
+  id         Int      @id @default(autoincrement())
+  position   Int
+  playlistId Int
+  trackId    Int
+  playlist   Playlist @relation(fields: [playlistId], references: [id], onDelete: Cascade)
+  track      Track    @relation(fields: [trackId], references: [id], onDelete: Cascade)
+
+  @@unique([playlistId, trackId])
+  @@index([playlistId, position])
+}
+
+model UserFavoriteArtist {
+  userId   Int
+  artistId Int
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  artist   Artist @relation(fields: [artistId], references: [id], onDelete: Cascade)
+
+  @@id([userId, artistId])
+}
