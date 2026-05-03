@@ -20,7 +20,7 @@ import "@/components/PlaylistSelector.css";
 
 const MOODS = ["Энергичное", "Хорошее настроение", "Релакс", "Спорт", "Грустное", "Веселое"] as const;
 
-type MainTab = "playlists" | "artists" | "albums" | "streams" | "fav";
+type MainTab = "playlists" | "artists" | "albums" | "fav";
 
 function norm(s: string): string {
   return s.trim().toLowerCase();
@@ -36,7 +36,6 @@ export default function DashboardPage() {
   const [mood, setMood] = useState<string | null>(null);
   const [mainTab, setMainTab] = useState<MainTab>("playlists");
   const [dashArtists, setDashArtists] = useState<ArtistOption[] | null>(null);
-  const [streamTracks, setStreamTracks] = useState<CatalogTrack[] | null>(null);
   const [catalogTracks, setCatalogTracks] = useState<CatalogTrack[] | null>(null);
   const [selectedTrackId, setSelectedTrackId] = useState<number | null>(null);
 
@@ -82,22 +81,6 @@ export default function DashboardPage() {
         if (!cancelled) setDashArtists(data);
       } catch {
         if (!cancelled) setDashArtists([]);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [mainTab]);
-
-  useEffect(() => {
-    if (mainTab !== "streams") return;
-    let cancelled = false;
-    (async () => {
-      try {
-        const { tracks } = await fetchDiscoverTracks(28);
-        if (!cancelled) setStreamTracks(tracks);
-      } catch {
-        if (!cancelled) setStreamTracks([]);
       }
     })();
     return () => {
@@ -197,11 +180,7 @@ export default function DashboardPage() {
     return dashArtists.filter((a) => norm(a.name).includes(q));
   }, [dashArtists, searchQuery]);
 
-  const streamPlayerTracks = useMemo(
-    () => (streamTracks ? catalogTracksToPlayerTracks(streamTracks) : []),
-    [streamTracks]
-  );
-
+  
   function approxDuration(count: number): string {
     return formatDurationHuman(count * 180);
   }
@@ -250,7 +229,6 @@ export default function DashboardPage() {
             ["playlists", "Плейлисты"],
             ["artists", "Артисты"],
             ["albums", "Альбомы"],
-            ["streams", "Стримы"],
             ["fav", "Любимое"],
           ] as const
         ).map(([id, label]) => (
@@ -387,71 +365,6 @@ export default function DashboardPage() {
                 </li>
               ))}
             </ul>
-          )}
-          </div>
-        ) : mainTab === "streams" ? (
-          <div className="fig-tracks">
-          {streamTracks === null ? (
-            <p className="fig-pl-sub">Загрузка подборки…</p>
-          ) : streamTracks.length === 0 ? (
-            <p className="fig-pl-sub">Не удалось загрузить треки.</p>
-          ) : (
-            streamTracks.map((t, i) => {
-              const active = queue[qIndex]?.id === t.id;
-              return (
-                <button
-                  key={t.id}
-                  type="button"
-                  className={`fig-track-row${active ? " active" : ""}`}
-                  onClick={() => setQueueFromTracks(streamPlayerTracks, i, true)}
-                >
-                  <span className="fig-t-num">{i + 1}</span>
-                  <span className="fig-t-cover" aria-hidden />
-                  <span className="fig-t-meta-row">
-                    <span className="fig-t-title">{t.title}</span>
-                    <span className="fig-t-artist">{t.artist.name}</span>
-                    <span className="fig-t-dur">{formatDuration(t.durationSec)}</span>
-                  </span>
-                  <span className="fig-track-actions">
-                    <span
-                      role="button"
-                      tabIndex={0}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleLikeTrack(t.id);
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          toggleLikeTrack(t.id);
-                        }
-                      }}
-                    >
-                      <IconHeart filled={isTrackLiked(t.id)} />
-                    </span>
-                    <span
-                      role="button"
-                      tabIndex={0}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedTrackId(t.id);
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          setSelectedTrackId(t.id);
-                        }
-                      }}
-                      title="Добавить в плейлист"
-                    >
-                      <IconMoreVert />
-                    </span>
-                  </span>
-                </button>
-              );
-            })
           )}
           </div>
         ) : (

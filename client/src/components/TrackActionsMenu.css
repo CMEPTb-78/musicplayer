@@ -18,7 +18,7 @@
 }
 
 .track-actions-trigger:hover {
-  background: var(--fig-hover, #333);
+  background: transparent;
 }
 
 .track-actions-like-btn,
@@ -102,11 +102,9 @@
 
 /* Focus styles */
 .track-actions-trigger:focus {
-  outline: 2px solid var(--fig-accent, #1db954);
-  outline-offset: 1px;
+  outline: none;
 }
 
 .track-actions-item:focus {
-  outline: 2px solid var(--fig-accent, #1db954);
-  outline-offset: -2px;
+  outline: none;
 }
