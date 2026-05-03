@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { addTrackToPlaylist, createPlaylist, fetchPlaylists, type PlaylistSummary } from "@/api";
 
 interface PlaylistSelectorProps {
@@ -61,7 +62,7 @@ export default function PlaylistSelector({ trackId, onClose, onTrackAdded }: Pla
     }
   };
 
-  return (
+  return createPortal(
     <div className="playlist-selector-overlay" onClick={onClose}>
       <div className="playlist-selector" onClick={(e) => e.stopPropagation()}>
         <div className="playlist-selector-header">
@@ -130,6 +131,7 @@ export default function PlaylistSelector({ trackId, onClose, onTrackAdded }: Pla
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

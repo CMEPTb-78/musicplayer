@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { IconHeart } from "@/icons/FigIcons";
+import ConfirmDialog from "@/components/ConfirmDialog";
 
 interface TrackActionsMenuProps {
   trackId: number;
@@ -24,23 +26,23 @@ export default function TrackActionsMenu({
   showRemoveOption = false,
   showDeletePlaylistOption = false,
 }: TrackActionsMenuProps) {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
+        setIsDialogOpen(false);
       }
     };
 
     const handleEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
-        setIsOpen(false);
+        setIsDialogOpen(false);
       }
     };
 
-    if (isOpen) {
+    if (isDialogOpen) {
       document.addEventListener('mousedown', handleClickOutside);
       document.addEventListener('keydown', handleEscape);
     }
@@ -49,83 +51,65 @@ export default function TrackActionsMenu({
       document.removeEventListener('mousedown', handleClickOutside);
       document.removeEventListener('keydown', handleEscape);
     };
-  }, [isOpen]);
+  }, [isDialogOpen]);
 
   const handleLikeClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     onLikeToggle();
-    setIsOpen(false);
   };
 
   const handleAddClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     onAddToPlaylist();
-    setIsOpen(false);
+    setIsDialogOpen(false);
   };
 
   const handleRemoveClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     onRemoveFromPlaylist();
-    setIsOpen(false);
+    setIsDialogOpen(false);
   };
 
   return (
-    <div className="track-actions-menu" ref={menuRef}>
-      <button
-        type="button"
-        className="track-actions-trigger"
-        onClick={(e) => {
-          e.stopPropagation();
-          setIsOpen(!isOpen);
-        }}
-        aria-label="Действия с треком"
-        aria-expanded={isOpen}
-        aria-haspopup="true"
-      >
-        <span className="track-actions-like-btn" onClick={handleLikeClick}>
-          <IconHeart filled={isLiked} />
-        </span>
-        <span className="track-actions-more-btn">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-            <circle cx="3" cy="8" r="1.5"/>
-            <circle cx="8" cy="8" r="1.5"/>
-            <circle cx="13" cy="8" r="1.5"/>
-          </svg>
-        </span>
-      </button>
-
-      {isOpen && (
-        <div className="track-actions-dropdown glass">
-          <button
-            type="button"
-            className="track-actions-item"
-            onClick={handleAddClick}
-          >
-            Добавить в плейлист
-          </button>
-          {showRemoveOption && (
-            <button
-              type="button"
-              className="track-actions-item danger"
-              onClick={handleRemoveClick}
-            >
-              Удалить из плейлиста
-            </button>
-          )}
-          {showDeletePlaylistOption && (
-            <button
-              type="button"
-              className="track-actions-item danger"
-              onClick={() => {
-                e.stopPropagation();
-                onDeletePlaylist?.();
-              }}
-            >
-              Удалить плейлист
-            </button>
-          )}
-        </div>
+    <>
+      <div className="track-actions-menu" ref={menuRef}>
+        <button
+          type="button"
+          className="track-actions-trigger"
+          onClick={(e) => {
+            e.stopPropagation();
+          }}
+          aria-label="Действия с треком"
+        >
+          <span className="track-actions-like-btn" onClick={handleLikeClick}>
+            <IconHeart filled={isLiked} />
+          </span>
+          <span className="track-actions-more-btn" onClick={(e) => {
+            e.stopPropagation();
+            setIsDialogOpen(true);
+          }}>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+              <circle cx="3" cy="8" r="1.5"/>
+              <circle cx="8" cy="8" r="1.5"/>
+              <circle cx="13" cy="8" r="1.5"/>
+            </svg>
+          </span>
+        </button>
+      </div>
+      
+      {isDialogOpen && createPortal(
+        <ConfirmDialog
+          isOpen={isDialogOpen}
+          title="Действия с треком"
+          message={`Выберите действие для трека "${trackTitle}"`}
+          confirmText="Добавить в плейлист"
+          cancelText="Отмена"
+          onConfirm={() => handleAddClick({} as React.MouseEvent)}
+          onCancel={() => setIsDialogOpen(false)}
+          danger={false}
+        />,
+        document.body
       )}
-    </div>
+    </>
   );
 }
