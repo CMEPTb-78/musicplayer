@@ -23,8 +23,6 @@ export default function App() {
       <div className={`shell${narrowShell ? " shell--narrow shell--app shell--auth" : ""}`}>
         {narrowShell ? (
           <header className="auth-shell-header">
-            <div className="auth-shell-brand">Индивидуальные аудиоподборки</div>
-            <span className="auth-shell-meta">Курсовой проект · клиент-сервер</span>
           </header>
         ) : null}
 
