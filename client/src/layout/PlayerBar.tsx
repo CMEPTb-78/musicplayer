@@ -95,8 +95,9 @@ export default function PlayerBar() {
           <button
             type="button"
             className="fig-p-expand"
-            aria-label="Открытия — каталог треков"
-            onClick={() => navigate("/discover")}
+            aria-label="Открыть страницу трека"
+            onClick={() => current && navigate(`/track/${current.id}`)}
+            disabled={!current}
           >
             <IconExpand className="fig-p-ico-expand" />
           </button>

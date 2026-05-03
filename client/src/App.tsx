@@ -7,7 +7,9 @@ import DashboardPage from "@/pages/DashboardPage";
 import DiscoverPage from "@/pages/DiscoverPage";
 import LoginPage from "@/pages/LoginPage";
 import PlaylistPage from "@/pages/PlaylistPage";
+import RecentPage from "@/pages/RecentPage";
 import RegisterPage from "@/pages/RegisterPage";
+import TrackPage from "@/pages/TrackPage";
 import PrivateOutlet from "@/routing/PrivateOutlet";
 
 export default function App() {
@@ -35,7 +37,9 @@ export default function App() {
                 <Route index element={<DashboardPage />} />
                 <Route path="playlist/:id" element={<PlaylistPage />} />
                 <Route path="discover" element={<DiscoverPage />} />
+                <Route path="recent" element={<RecentPage />} />
                 <Route path="artist/:artistId" element={<ArtistPage />} />
+                <Route path="track/:id" element={<TrackPage />} />
               </Route>
             </Route>
           </Route>

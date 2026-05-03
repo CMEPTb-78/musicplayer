@@ -1,0 +1,229 @@
+.track-page-header {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 32px;
+  padding: 24px;
+  background: var(--fig-surface-secondary, #2a2a2a);
+  border-radius: 12px;
+  border: 1px solid var(--fig-border, #333);
+}
+
+.track-page-cover {
+  flex-shrink: 0;
+  width: 240px;
+  height: 240px;
+}
+
+.track-page-cover-placeholder {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, var(--fig-accent, #1db954), var(--fig-accent-secondary, #1ed760));
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 3rem;
+  font-weight: bold;
+}
+
+.track-page-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-width: 0;
+}
+
+.track-page-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+  line-height: 1.2;
+  color: var(--fig-text-primary, #fff);
+  word-break: break-word;
+}
+
+.track-page-artist {
+  margin-bottom: 16px;
+}
+
+.track-page-artist-link {
+  color: var(--fig-text-secondary, #999);
+  text-decoration: none;
+  font-size: 1.2rem;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.track-page-artist-link:hover {
+  color: var(--fig-text-primary, #fff);
+}
+
+.track-page-meta {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 24px;
+  color: var(--fig-text-secondary, #999);
+  font-size: 0.9rem;
+}
+
+.track-page-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.track-page-play-btn {
+  background: var(--fig-accent, #1db954);
+  color: white;
+  border: none;
+  padding: 12px 32px;
+  border-radius: 24px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.track-page-play-btn:hover {
+  background: var(--fig-accent-hover, #1ed760);
+  transform: translateY(-1px);
+}
+
+.track-page-play-btn.playing {
+  background: var(--fig-success, #4caf50);
+}
+
+.track-page-like-btn,
+.track-page-add-btn {
+  background: none;
+  border: none;
+  padding: 12px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--fig-text-secondary, #999);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+}
+
+.track-page-like-btn:hover,
+.track-page-add-btn:hover {
+  background: var(--fig-hover, #333);
+  color: var(--fig-text-primary, #fff);
+}
+
+.track-page-like-btn svg {
+  width: 24px;
+  height: 24px;
+}
+
+.track-page-add-btn svg {
+  width: 24px;
+  height: 24px;
+}
+
+.track-page-content {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.track-page-section {
+  background: var(--fig-surface-secondary, #2a2a2a);
+  border-radius: 12px;
+  border: 1px solid var(--fig-border, #333);
+  padding: 24px;
+}
+
+.track-page-section h3 {
+  margin: 0 0 16px 0;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--fig-text-primary, #fff);
+}
+
+.track-page-details {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.track-page-detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--fig-border, #333);
+}
+
+.track-page-detail-row:last-child {
+  border-bottom: none;
+}
+
+.track-page-detail-label {
+  color: var(--fig-text-secondary, #999);
+  font-weight: 500;
+}
+
+.track-page-detail-value {
+  color: var(--fig-text-primary, #fff);
+  font-weight: 400;
+  text-align: right;
+}
+
+.track-page-detail-value.link {
+  color: var(--fig-accent, #1db954);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.track-page-detail-value.link:hover {
+  color: var(--fig-accent-hover, #1ed760);
+}
+
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: var(--fig-text-secondary, #999);
+  font-size: 1.1rem;
+}
+
+.error {
+  background: var(--fig-error, #f44336);
+  color: white;
+  padding: 16px;
+  border-radius: 8px;
+  margin: 16px 0;
+}
+
+@media (max-width: 768px) {
+  .track-page-header {
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .track-page-cover {
+    width: 100%;
+    height: 300px;
+  }
+  
+  .track-page-title {
+    font-size: 2rem;
+  }
+  
+  .track-page-actions {
+    flex-wrap: wrap;
+  }
+  
+  .track-page-meta {
+    flex-direction: column;
+    gap: 8px;
+  }
+}

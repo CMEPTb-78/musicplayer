@@ -1,0 +1,112 @@
+.track-actions-menu {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.track-actions-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  padding: 4px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.track-actions-trigger:hover {
+  background: var(--fig-hover, #333);
+}
+
+.track-actions-like-btn,
+.track-actions-more-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  color: var(--fig-text-secondary, #999);
+  transition: color 0.2s ease;
+}
+
+.track-actions-like-btn:hover,
+.track-actions-more-btn:hover {
+  color: var(--fig-text-primary, #fff);
+}
+
+.track-actions-like-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.track-actions-more-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.track-actions-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 4px;
+  min-width: 180px;
+  z-index: 100;
+  overflow: hidden;
+  border-radius: var(--thumb-radius, 12px);
+  padding: 8px 0;
+}
+
+.track-actions-item {
+  display: block;
+  width: 100%;
+  padding: 10px 16px;
+  background: none;
+  border: none;
+  text-align: left;
+  color: #ffffff;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  border-radius: 0;
+}
+
+.track-actions-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #ffffff;
+}
+
+.track-actions-item.danger {
+  color: var(--fig-pink-start, #ff3d68);
+}
+
+.track-actions-item.danger:hover {
+  background: rgba(255, 61, 104, 0.1);
+  color: var(--fig-pink-start, #ff3d68);
+}
+
+.track-actions-item:first-child {
+  border-radius: 8px 8px 0 0;
+}
+
+.track-actions-item:last-child {
+  border-radius: 0 0 8px 8px;
+}
+
+.track-actions-item:only-child {
+  border-radius: 8px;
+}
+
+/* Focus styles */
+.track-actions-trigger:focus {
+  outline: 2px solid var(--fig-accent, #1db954);
+  outline-offset: 1px;
+}
+
+.track-actions-item:focus {
+  outline: 2px solid var(--fig-accent, #1db954);
+  outline-offset: -2px;
+}

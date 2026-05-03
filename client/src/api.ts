@@ -116,6 +116,38 @@ export async function createPlaylist(name: string) {
   });
 }
 
+export async function addTrackToPlaylist(playlistId: number, trackId: number) {
+  return request<{ success: boolean; position: number }>(`/api/playlists/${playlistId}/tracks`, {
+    method: "POST",
+    json: { trackId },
+  });
+}
+
+export async function removeTrackFromPlaylist(playlistId: number, trackId: number) {
+  return request<{ success: boolean }>(`/api/playlists/${playlistId}/tracks/${trackId}`, {
+    method: "DELETE",
+  });
+}
+
+export async function deletePlaylist(playlistId: number) {
+  return request<{ success: boolean }>(`/api/playlists/${playlistId}`, {
+    method: "DELETE",
+  });
+}
+
+export type TrackDetail = CatalogTrack & {
+  album?: {
+    id: number;
+    title: string;
+    coverUrl?: string;
+  };
+  lyrics?: string;
+};
+
+export async function fetchTrack(trackId: number) {
+  return request<TrackDetail>(`/api/tracks/${trackId}`);
+}
+
 export function streamUrl(trackId: number): string {
   const token = getToken();
   const q = token ? `?token=${encodeURIComponent(token)}` : "";

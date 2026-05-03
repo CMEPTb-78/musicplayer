@@ -7,6 +7,7 @@ import artistsRoutes from "./routes/artists.js";
 import discoverRoutes from "./routes/discover.js";
 import playlistsRoutes from "./routes/playlists.js";
 import streamRoutes from "./routes/stream.js";
+import tracksRoutes from "./routes/tracks.js";
 import uploadsRoutes from "./routes/uploads.js";
 
 const app = express();
@@ -22,6 +23,7 @@ app.use("/api/artists", artistsRoutes);
 app.use("/api/discover", discoverRoutes);
 app.use("/api/playlists", playlistsRoutes);
 app.use("/api/stream", streamRoutes);
+app.use("/api/tracks", tracksRoutes);
 app.use("/api/uploads", uploadsRoutes);
 
 const uploadRoot = path.resolve(process.env.UPLOAD_DIR ?? "./uploads");

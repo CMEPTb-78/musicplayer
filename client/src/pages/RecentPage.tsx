@@ -1,9 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { fetchDiscoverTracks, type CatalogTrack } from "@/api";
 import { IconHeart, IconMoreVert } from "@/icons/FigIcons";
 import { useMainLayoutOutlet } from "@/layout/mainLayoutContext";
-import { catalogTracksToPlayerTracks } from "@/layout/playlistToPlayerTracks";
 import { usePlayer } from "@/player/PlayerContext";
 import { formatDuration } from "@/utils/format";
 import PlaylistSelector from "@/components/PlaylistSelector";
@@ -13,36 +11,26 @@ function norm(s: string): string {
   return s.trim().toLowerCase();
 }
 
-export default function DiscoverPage() {
+export default function RecentPage() {
   const { searchQuery } = useMainLayoutOutlet();
-  const [tracks, setTracks] = useState<CatalogTrack[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [selectedTrackId, setSelectedTrackId] = useState<number | null>(null);
-  const { setQueueFromTracks, index: qIndex, queue, toggleLikeTrack, isTrackLiked } = usePlayer();
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const { tracks: list } = await fetchDiscoverTracks(48);
-        if (!cancelled) setTracks(list);
-      } catch (e) {
-        if (!cancelled) setError(e instanceof Error ? e.message : "Ошибка");
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const { recent, setQueueFromTracks, index: qIndex, queue, toggleLikeTrack, isTrackLiked } = usePlayer();
 
   const filtered = useMemo(() => {
-    if (!tracks) return [];
+    if (!recent) return [];
     const q = norm(searchQuery);
-    if (!q) return tracks;
-    return tracks.filter((t) => norm(t.title).includes(q) || norm(t.artist.name).includes(q));
-  }, [tracks, searchQuery]);
+    if (!q) return recent;
+    return recent.filter((t) => norm(t.title).includes(q) || norm(t.artist).includes(q));
+  }, [recent, searchQuery]);
 
-  const playerTracks = useMemo(() => catalogTracksToPlayerTracks(filtered), [filtered]);
+  const playerTracks = useMemo(() => {
+    return filtered.map((t) => ({
+      id: t.id,
+      title: t.title,
+      artist: t.artist,
+      durationSec: t.durationSec,
+    }));
+  }, [filtered]);
 
   useEffect(() => {
     if (!playerTracks.length) return;
@@ -55,17 +43,15 @@ export default function DiscoverPage() {
         <Link to="/" className="fig-rc-all" style={{ display: "inline-block", marginBottom: 8 }}>
           ← Главная
         </Link>
-        <h1 style={{ margin: 0, fontSize: "1.35rem", fontWeight: 700, letterSpacing: "-0.02em" }}>Открытия</h1>
+        <h1 style={{ margin: 0, fontSize: "1.35rem", fontWeight: 700, letterSpacing: "-0.02em" }}>Играло недавно</h1>
         <p className="fig-pl-sub" style={{ marginTop: 6 }}>
-          Популярные треки из каталога — обновляется при каждом заходе на страницу.
+          Недавно прослушанные треки — {recent.length} треков.
         </p>
       </div>
 
       <div className="fig-tab-body">
-        {error ? <div className="error">{error}</div> : null}
-
         <div className="fig-tracks">
-          {tracks === null ? (
+          {!recent ? (
             <p className="fig-pl-sub">Загрузка…</p>
           ) : filtered.length === 0 ? (
             <p className="fig-pl-sub">Нет треков по запросу.</p>
@@ -83,7 +69,7 @@ export default function DiscoverPage() {
                   <span className="fig-t-cover" aria-hidden />
                   <span className="fig-t-meta-row">
                     <span className="fig-t-title">{t.title}</span>
-                    <span className="fig-t-artist">{t.artist.name}</span>
+                    <span className="fig-t-artist">{t.artist}</span>
                     <span className="fig-t-dur">{formatDuration(t.durationSec)}</span>
                   </span>
                   <span className="fig-track-actions">

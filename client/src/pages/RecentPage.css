@@ -1,0 +1,4 @@
+.fig-tracks-full-page {
+  max-height: none !important;
+  overflow-y: visible !important;
+}

@@ -1,11 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { fetchPlaylist, type PlaylistDetail } from "@/api";
-import { IconHeart, IconMoreVert } from "@/icons/FigIcons";
+import { fetchPlaylist, removeTrackFromPlaylist, deletePlaylist, type PlaylistDetail } from "@/api";
 import { useMainLayoutOutlet } from "@/layout/mainLayoutContext";
 import { playlistToPlayerTracks } from "@/layout/playlistToPlayerTracks";
 import { usePlayer } from "@/player/PlayerContext";
 import { formatDuration } from "@/utils/format";
+import PlaylistSelector from "@/components/PlaylistSelector";
+import ConfirmDialog from "@/components/ConfirmDialog";
+import TrackActionsMenu from "@/components/TrackActionsMenu";
+import "@/components/PlaylistSelector.css";
+import "@/components/ConfirmDialog.css";
+import "@/components/TrackActionsMenu.css";
 
 function norm(s: string): string {
   return s.trim().toLowerCase();
@@ -17,6 +22,9 @@ export default function PlaylistPage() {
   const { searchQuery } = useMainLayoutOutlet();
   const [data, setData] = useState<PlaylistDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [selectedTrackId, setSelectedTrackId] = useState<number | null>(null);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [trackToDelete, setTrackToDelete] = useState<{ id: number; title: string } | null>(null);
   const { setQueueFromTracks, index: qIndex, queue, toggleLikeTrack, isTrackLiked } = usePlayer();
 
   const filteredTracks = useMemo(() => {
@@ -30,6 +38,59 @@ export default function PlaylistPage() {
     if (!data) return [];
     return playlistToPlayerTracks({ ...data, tracks: filteredTracks });
   }, [data, filteredTracks]);
+
+  const handleDeleteClick = (trackId: number, trackTitle: string) => {
+    setTrackToDelete({ id: trackId, title: trackTitle });
+    setDeleteConfirmOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!trackToDelete || !data) return;
+    
+    try {
+      await removeTrackFromPlaylist(playlistId, trackToDelete.id);
+      // Refresh playlist data
+      setData(null);
+      // Trigger playlist update event
+      window.dispatchEvent(new CustomEvent('playlist-updated'));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Ошибка удаления трека");
+    } finally {
+      setDeleteConfirmOpen(false);
+      setTrackToDelete(null);
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setDeleteConfirmOpen(false);
+    setTrackToDelete(null);
+  };
+
+  const handlePlaylistDelete = () => {
+    if (!data || data.isStarter) return;
+    setTrackToDelete({ id: data.id, title: data.name });
+    setDeleteConfirmOpen(true);
+  };
+
+  const handleConfirmPlaylistDelete = async () => {
+    if (!trackToDelete || !data) return;
+    
+    try {
+      await deletePlaylist(trackToDelete.id);
+      // Navigate back to home
+      window.location.href = '/';
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Ошибка удаления плейлиста");
+    } finally {
+      setDeleteConfirmOpen(false);
+      setTrackToDelete(null);
+    }
+  };
+
+  const handleCancelPlaylistDelete = () => {
+    setDeleteConfirmOpen(false);
+    setTrackToDelete(null);
+  };
 
   useEffect(() => {
     if (!Number.isFinite(playlistId)) return;
@@ -95,30 +156,49 @@ export default function PlaylistPage() {
                   <span className="fig-t-dur">{formatDuration(t.durationSec)}</span>
                 </span>
                 <span className="fig-track-actions">
-                  <span
-                    role="button"
-                    tabIndex={0}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleLikeTrack(t.id);
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        toggleLikeTrack(t.id);
-                      }
-                    }}
-                  >
-                    <IconHeart filled={isTrackLiked(t.id)} />
-                  </span>
-                  <IconMoreVert />
+                  <TrackActionsMenu
+                    trackId={t.id}
+                    trackTitle={t.title}
+                    isLiked={isTrackLiked(t.id)}
+                    onLikeToggle={() => toggleLikeTrack(t.id)}
+                    onAddToPlaylist={() => setSelectedTrackId(t.id)}
+                    onRemoveFromPlaylist={() => handleDeleteClick(t.id, t.title)}
+                    onDeletePlaylist={() => {}}
+                    showRemoveOption={true}
+                    showDeletePlaylistOption={false}
+                  />
                 </span>
               </button>
             );
           })}
         </div>
       </div>
+      
+      {selectedTrackId && (
+        <PlaylistSelector
+          trackId={selectedTrackId}
+          onClose={() => setSelectedTrackId(null)}
+          onTrackAdded={() => {
+            // Refresh playlist data when track is added
+            if (data) {
+              setData(null); // This will trigger a refetch
+            }
+            // Also trigger a global refresh of playlists list to update track counts
+            window.dispatchEvent(new CustomEvent('playlist-updated'));
+          }}
+        />
+      )}
+      
+      <ConfirmDialog
+        isOpen={deleteConfirmOpen}
+        title="Удалить плейлист?"
+        message={`Вы уверены, что хотите удалить плейлист "${trackToDelete?.title}"? Это действие нельзя отменить.`}
+        confirmText="Удалить"
+        cancelText="Отмена"
+        onConfirm={handleConfirmPlaylistDelete}
+        onCancel={handleCancelPlaylistDelete}
+        danger={true}
+      />
     </div>
   );
 }

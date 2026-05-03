@@ -15,6 +15,8 @@ import { useMainLayoutOutlet } from "@/layout/mainLayoutContext";
 import { catalogTracksToPlayerTracks } from "@/layout/playlistToPlayerTracks";
 import { usePlayer } from "@/player/PlayerContext";
 import { formatDuration, formatDurationHuman } from "@/utils/format";
+import PlaylistSelector from "@/components/PlaylistSelector";
+import "@/components/PlaylistSelector.css";
 
 const MOODS = ["Энергичное", "Хорошее настроение", "Релакс", "Спорт", "Грустное", "Веселое"] as const;
 
@@ -35,10 +37,12 @@ export default function DashboardPage() {
   const [mainTab, setMainTab] = useState<MainTab>("playlists");
   const [dashArtists, setDashArtists] = useState<ArtistOption[] | null>(null);
   const [streamTracks, setStreamTracks] = useState<CatalogTrack[] | null>(null);
+  const [catalogTracks, setCatalogTracks] = useState<CatalogTrack[] | null>(null);
+  const [selectedTrackId, setSelectedTrackId] = useState<number | null>(null);
 
   useEffect(() => {
-    let cancelled = false;
-    (async () => {
+    const loadPlaylists = async () => {
+      let cancelled = false;
       try {
         const data = await fetchPlaylists();
         if (cancelled) return;
@@ -54,9 +58,18 @@ export default function DashboardPage() {
       } catch (e) {
         if (!cancelled) setError(e instanceof Error ? e.message : "Ошибка");
       }
-    })();
+    };
+
+    loadPlaylists();
+
+    const handlePlaylistUpdate = () => {
+      loadPlaylists();
+    };
+
+    window.addEventListener('playlist-updated', handlePlaylistUpdate);
+    
     return () => {
-      cancelled = true;
+      window.removeEventListener('playlist-updated', handlePlaylistUpdate);
     };
   }, []);
 
@@ -92,6 +105,22 @@ export default function DashboardPage() {
     };
   }, [mainTab]);
 
+  useEffect(() => {
+    if (mainTab !== "fav") return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const { tracks } = await fetchDiscoverTracks(200); // Fetch more tracks for favorites
+        if (!cancelled) setCatalogTracks(tracks);
+      } catch {
+        if (!cancelled) setCatalogTracks([]);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [mainTab]);
+
   const orderedTracks = useMemo(() => {
     const base = detail?.tracks ?? [];
     const list = [...base];
@@ -113,8 +142,21 @@ export default function DashboardPage() {
 
   const displayTracks = useMemo(() => {
     if (mainTab !== "fav") return searchFilteredTracks;
-    return searchFilteredTracks.filter((t) => isTrackLiked(t.id));
-  }, [searchFilteredTracks, mainTab, likedTrackIds, isTrackLiked]);
+    
+    // For favorites tab, use catalog tracks instead of playlist tracks
+    if (!catalogTracks) return [];
+    
+    const q = norm(searchQuery);
+    let favoriteTracks = catalogTracks.filter((t) => isTrackLiked(t.id));
+    
+    if (q) {
+      favoriteTracks = favoriteTracks.filter((t) => 
+        norm(t.title).includes(q) || norm(t.artist.name).includes(q)
+      );
+    }
+    
+    return favoriteTracks;
+  }, [searchFilteredTracks, mainTab, likedTrackIds, isTrackLiked, catalogTracks, searchQuery]);
 
   const playerTracksForQueue = useMemo(
     () =>
@@ -271,7 +313,24 @@ export default function DashboardPage() {
                     >
                       <IconHeart filled={isTrackLiked(t.id)} />
                     </span>
-                    <IconMoreVert />
+                    <span
+                      role="button"
+                      tabIndex={0}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedTrackId(t.id);
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setSelectedTrackId(t.id);
+                        }
+                      }}
+                      title="Добавить в плейлист"
+                    >
+                      <IconMoreVert />
+                    </span>
                   </span>
                 </button>
               );
@@ -371,7 +430,24 @@ export default function DashboardPage() {
                     >
                       <IconHeart filled={isTrackLiked(t.id)} />
                     </span>
-                    <IconMoreVert />
+                    <span
+                      role="button"
+                      tabIndex={0}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedTrackId(t.id);
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setSelectedTrackId(t.id);
+                        }
+                      }}
+                      title="Добавить в плейлист"
+                    >
+                      <IconMoreVert />
+                    </span>
                   </span>
                 </button>
               );
@@ -417,9 +493,26 @@ export default function DashboardPage() {
                         }
                       }}
                     >
-                      <IconHeart filled />
+                      <IconHeart filled={isTrackLiked(t.id)} />
                     </span>
-                    <IconMoreVert />
+                    <span
+                      role="button"
+                      tabIndex={0}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedTrackId(t.id);
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setSelectedTrackId(t.id);
+                        }
+                      }}
+                      title="Добавить в плейлист"
+                    >
+                      <IconMoreVert />
+                    </span>
                   </span>
                 </button>
               );
@@ -428,6 +521,17 @@ export default function DashboardPage() {
           </div>
         )}
       </div>
+      
+      {selectedTrackId && (
+        <PlaylistSelector
+          trackId={selectedTrackId}
+          onClose={() => setSelectedTrackId(null)}
+          onTrackAdded={() => {
+            // Trigger a global refresh of playlists list to update track counts
+            window.dispatchEvent(new CustomEvent('playlist-updated'));
+          }}
+        />
+      )}
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
-import { createPlaylist, fetchArtists, fetchPlaylists, type ArtistOption, type PlaylistSummary } from "@/api";
+import { createPlaylist, deletePlaylist, fetchArtists, fetchPlaylists, type ArtistOption, type PlaylistSummary } from "@/api";
 import {
   IconDiscover,
   IconHeart,
@@ -13,6 +13,8 @@ import { useAuth } from "@/auth/AuthContext";
 import { usePlayer } from "@/player/PlayerContext";
 import PlayerBar from "@/layout/PlayerBar";
 import type { MainLayoutOutletContext } from "@/layout/mainLayoutContext";
+import ConfirmDialog from "@/components/ConfirmDialog";
+import "@/components/ConfirmDialog.css";
 
 type LibTab = "playlists" | "albums" | "artists";
 
@@ -23,6 +25,11 @@ function isLikedPlaylistName(name: string): boolean {
 
 function norm(s: string): string {
   return s.trim().toLowerCase();
+}
+
+function truncatePlaylistName(name: string): string {
+  if (name.length <= 9) return name;
+  return name.substring(0, 9) + "...";
 }
 
 export default function MainLayout() {
@@ -36,6 +43,8 @@ export default function MainLayout() {
   const [searchQuery, setSearchQuery] = useState("");
   const [catalogArtists, setCatalogArtists] = useState<ArtistOption[] | null>(null);
   const [artistsLoading, setArtistsLoading] = useState(false);
+  const [playlistToDelete, setPlaylistToDelete] = useState<PlaylistSummary | null>(null);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -51,6 +60,16 @@ export default function MainLayout() {
 
   useEffect(() => {
     void load();
+
+    const handlePlaylistUpdate = () => {
+      void load();
+    };
+
+    window.addEventListener('playlist-updated', handlePlaylistUpdate);
+    
+    return () => {
+      window.removeEventListener('playlist-updated', handlePlaylistUpdate);
+    };
   }, [load]);
 
   useEffect(() => {
@@ -95,6 +114,34 @@ export default function MainLayout() {
       window.alert(e instanceof Error ? e.message : "Не удалось создать плейлист");
     }
   }
+
+  const handleDeleteClick = (playlist: PlaylistSummary) => {
+    if (playlist.isStarter) {
+      window.alert("Нельзя удалить стартовый плейлист");
+      return;
+    }
+    setPlaylistToDelete(playlist);
+    setDeleteConfirmOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!playlistToDelete) return;
+    
+    try {
+      await deletePlaylist(playlistToDelete.id);
+      // Update playlists list immediately
+      setPlaylists(prev => prev.filter(p => p.id !== playlistToDelete.id));
+      setDeleteConfirmOpen(false);
+      setPlaylistToDelete(null);
+    } catch (e) {
+      window.alert(e instanceof Error ? e.message : "Не удалось удалить плейлист");
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setDeleteConfirmOpen(false);
+    setPlaylistToDelete(null);
+  };
 
   const outletContext = useMemo<MainLayoutOutletContext>(
     () => ({ searchQuery, setSearchQuery }),
@@ -169,7 +216,7 @@ export default function MainLayout() {
                 ) : (
                   <ul className="fig-pl-list">
                     {filteredPlaylists.map((p) => (
-                      <li key={p.id}>
+                      <li key={p.id} style={{ position: 'relative' }}>
                         <button
                           type="button"
                           className="fig-pl-row"
@@ -192,10 +239,43 @@ export default function MainLayout() {
                             {isLikedPlaylistName(p.name) ? <IconHeart filled /> : null}
                           </div>
                           <div className="fig-pl-meta">
-                            <div className="fig-pl-name">{p.name}</div>
+                            <div className="fig-pl-name">{truncatePlaylistName(p.name)}</div>
                             <div className="fig-pl-sub">Плейлист · {p._count.tracks} треков</div>
                           </div>
                         </button>
+                        {!p.isStarter && (
+                          <span
+                            className="fig-pl-more"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteClick(p);
+                            }}
+                            title="Удалить плейлист"
+                            style={{
+                              position: 'absolute',
+                              right: '12px',
+                              top: '50%',
+                              transform: 'translateY(-50%)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              width: '24px',
+                              height: '24px',
+                              cursor: 'pointer',
+                              opacity: '0.6',
+                              transition: 'opacity 0.2s ease',
+                              zIndex: 10
+                            }}
+                            onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
+                            onMouseLeave={(e) => e.currentTarget.style.opacity = '0.6'}
+                          >
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                              <circle cx="8" cy="3" r="1.5"/>
+                              <circle cx="8" cy="8" r="1.5"/>
+                              <circle cx="8" cy="13" r="1.5"/>
+                            </svg>
+                          </span>
+                        )}
                       </li>
                     ))}
                   </ul>
@@ -328,12 +408,12 @@ export default function MainLayout() {
         <div className="glass">
           <div className="fig-rc-head">
             <span className="fig-rc-title">Играло недавно</span>
-            <button type="button" className="fig-rc-all" onClick={() => navigate("/discover")}>
+            <button type="button" className="fig-rc-all" onClick={() => navigate("/recent")}>
               Смотреть все
             </button>
           </div>
           <ul className="fig-rc-list">
-            {(recent.length ? recent : []).map((t) => (
+            {(recent.length ? recent.slice(0, 8) : []).map((t) => (
               <li key={`${t.id}-${t.title}`}>
                 <div className="fig-rc-row">
                   <button
@@ -374,6 +454,17 @@ export default function MainLayout() {
           </ul>
         </div>
       </aside>
+
+      <ConfirmDialog
+        isOpen={deleteConfirmOpen}
+        title="Удалить плейлист?"
+        message={`Вы уверены, что хотите удалить плейлист "${playlistToDelete?.name}"? Это действие нельзя отменить.`}
+        confirmText="Удалить"
+        cancelText="Отмена"
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCancelDelete}
+        danger={true}
+      />
 
       <div className="fig-player-slot">
         <PlayerBar />
