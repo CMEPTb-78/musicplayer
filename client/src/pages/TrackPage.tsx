@@ -51,6 +51,7 @@ export default function TrackPage() {
       id: track.id,
       title: track.title,
       artist: track.artist.name,
+      artistId: track.artist.id,
       durationSec: track.durationSec,
     };
     
@@ -150,14 +151,7 @@ export default function TrackPage() {
               to={`/artist/${track.artist.id}`} 
               style={{ 
                 color: "rgba(255, 255, 255, 0.7)", 
-                textDecoration: "none",
-                transition: "color 0.2s ease"
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.color = "#ffffff";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.color = "rgba(255, 255, 255, 0.7)";
+                textDecoration: "none"
               }}
             >
               {track.artist.name}

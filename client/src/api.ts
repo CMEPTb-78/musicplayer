@@ -82,6 +82,7 @@ export type CatalogTrack = {
   durationSec: number;
   audioUrl: string;
   artist: { id: number; name: string };
+  artistId: number;
 };
 
 export type PlaylistDetail = {
@@ -91,7 +92,7 @@ export type PlaylistDetail = {
   createdAt: string;
   description?: string;
   coverImage?: string;
-  tracks: (CatalogTrack & { position: number })[];
+  tracks: (CatalogTrack & { position: number; artistId: number })[];
 };
 
 export async function fetchPlaylist(id: number) {

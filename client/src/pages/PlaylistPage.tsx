@@ -171,11 +171,11 @@ export default function PlaylistPage() {
         isStarter: true,
         createdAt: new Date().toISOString(),
         tracks: [
-          { id: 10001, title: "After Hours", popularity: 75, durationSec: 245, audioUrl: "", artist: { id: 2001, name: "Luna Echo" }, position: 1 },
-          { id: 10002, title: "Neon Dreams", popularity: 68, durationSec: 198, audioUrl: "", artist: { id: 2002, name: "Nightwave" }, position: 2 },
-          { id: 10003, title: "City Lights", popularity: 82, durationSec: 267, audioUrl: "", artist: { id: 2003, name: "Urban Pulse" }, position: 3 },
-          { id: 10004, title: "Midnight Blues", popularity: 71, durationSec: 312, audioUrl: "", artist: { id: 2004, name: "Jazz Noir" }, position: 4 },
-          { id: 10005, title: "Silent Streets", popularity: 64, durationSec: 189, audioUrl: "", artist: { id: 2005, name: "Echo Chamber" }, position: 5 },
+          { id: 10001, title: "After Hours", popularity: 75, durationSec: 245, audioUrl: "", artist: { id: 2001, name: "Luna Echo" }, artistId: 2001, position: 1 },
+          { id: 10002, title: "Neon Dreams", popularity: 68, durationSec: 198, audioUrl: "", artist: { id: 2002, name: "Nightwave" }, artistId: 2002, position: 2 },
+          { id: 10003, title: "City Lights", popularity: 82, durationSec: 267, audioUrl: "", artist: { id: 2003, name: "Urban Pulse" }, artistId: 2003, position: 3 },
+          { id: 10004, title: "Midnight Blues", popularity: 71, durationSec: 312, audioUrl: "", artist: { id: 2004, name: "Jazz Noir" }, artistId: 2004, position: 4 },
+          { id: 10005, title: "Silent Streets", popularity: 64, durationSec: 189, audioUrl: "", artist: { id: 2005, name: "Echo Chamber" }, artistId: 2005, position: 5 },
         ]
       },
       1002: {

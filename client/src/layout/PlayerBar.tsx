@@ -17,6 +17,7 @@ export default function PlayerBar() {
     seekToRatio,
     volume,
     setVolume,
+    catalogTracks,
   } = usePlayer();
 
   const progress = duration > 0 ? currentTime / duration : 0;
@@ -27,11 +28,35 @@ export default function PlayerBar() {
       <div className="fig-player-inner">
         <div className="fig-p-left">
           <div className="fig-p-text-stack">
-            <div className="fig-p-track-title">{current?.title ?? "Выберите трек"}</div>
+            <div className="fig-p-track-title" style={{ marginBottom: '0px' }}>{current?.title ?? "Выберите трек"}</div>
             <div className="fig-p-meta-row">
-              <span className="fig-p-track-artist">{current?.artist ?? "—"}</span>
+              {current?.artist ? (
+              <span 
+                className="fig-p-track-artist"
+                style={{ 
+                  color: 'var(--fig-text-secondary, #999)',
+                  cursor: 'pointer'
+                }}
+                onClick={() => {
+                  console.log('Artist click debug:', {
+                    current,
+                    artistId: current?.artistId,
+                    hasArtistId: !!current?.artistId
+                  });
+                  if (current?.artistId) {
+                    navigate(`/artist/${current.artistId}`);
+                  } else {
+                    console.log('No artistId available for navigation');
+                  }
+                }}
+              >
+                {current.artist}
+              </span>
+            ) : (
+              <span className="fig-p-track-artist">—</span>
+            )}
               {current ? (
-                <span className="fig-p-verified-wrap" aria-hidden>
+                <span className="fig-p-verified-wrap" style={{ marginLeft: '4px' }} aria-hidden>
                   <IconVerified className="fig-p-verified" />
                 </span>
               ) : null}

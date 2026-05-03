@@ -33,6 +33,7 @@ export default function DashboardPage() {
   const [lists, setLists] = useState<PlaylistSummary[] | null>(null);
   const [detail, setDetail] = useState<PlaylistDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [discoverTracks, setDiscoverTracks] = useState<CatalogTrack[]>([]);
   const [mood, setMood] = useState<string | null>(null);
   const [mainTab, setMainTab] = useState<MainTab>("playlists");
   const [dashArtists, setDashArtists] = useState<ArtistOption[] | null>(null);
@@ -123,6 +124,19 @@ export default function DashboardPage() {
   }, []);
 
   useEffect(() => {
+    const loadDiscoverTracks = async () => {
+      try {
+        const data = await fetchDiscoverTracks(100);
+        setDiscoverTracks(data.tracks);
+      } catch (e) {
+        console.error('Failed to load discover tracks:', e);
+      }
+    };
+
+    loadDiscoverTracks();
+  }, []);
+
+  useEffect(() => {
     if (mainTab !== "artists") return;
     let cancelled = false;
     (async () => {
@@ -209,12 +223,50 @@ export default function DashboardPage() {
   }, [detail?.id, mainTab, playerTracksForQueue, setQueueFromTracks]);
 
   const featured = useMemo(() => {
-    if (!lists) return [];
+    const unlikedTracks = discoverTracks.filter(track => !isTrackLiked(track.id));
     const q = norm(searchQuery);
-    let top = [...lists].sort((a, b) => b._count.tracks - a._count.tracks);
-    if (q) top = top.filter((p) => norm(p.name).includes(q));
-    return top.slice(0, 3);
-  }, [lists, searchQuery]);
+    let filtered = unlikedTracks;
+    if (q) filtered = filtered.filter((t) => norm(t.title).includes(q) || norm(t.artist.name).includes(q));
+    
+    // Create 3 collections from unliked tracks
+    const collections = [
+      {
+        id: 10001,
+        name: "Новые открытия",
+        _count: { tracks: Math.min(8, filtered.slice(0, 8).length) },
+        isStarter: true,
+        createdAt: new Date().toISOString(),
+        tracks: filtered.slice(0, 8),
+        styleClass: "collection-new",
+        gradient: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+        icon: "🌟"
+      },
+      {
+        id: 10002,
+        name: "Хиты",
+        _count: { tracks: Math.min(6, filtered.slice(8, 14).length) },
+        isStarter: true,
+        createdAt: new Date().toISOString(),
+        tracks: filtered.slice(8, 14),
+        styleClass: "collection-popular",
+        gradient: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+        icon: "🔥"
+      },
+      {
+        id: 10003,
+        name: "Скрытые жемчужины",
+        _count: { tracks: Math.min(10, filtered.slice(14, 24).length) },
+        isStarter: true,
+        createdAt: new Date().toISOString(),
+        tracks: filtered.slice(14, 24),
+        styleClass: "collection-hidden",
+        gradient: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
+        icon: "💎"
+      }
+    ].filter(c => c._count.tracks > 0);
+    
+    return collections;
+  }, [discoverTracks, isTrackLiked, searchQuery]);
 
   const filteredListsForAlbums = useMemo(() => {
     // Mock albums from other users (not editable)
@@ -322,14 +374,38 @@ export default function DashboardPage() {
             <button
               key={p.id}
               type="button"
-              className="fig-day-card"
-              onClick={() => navigate(`/playlist/${p.id}`)}
+              className={`fig-day-card ${p.styleClass}`}
+              onClick={() => {
+                if (p.tracks && p.tracks.length > 0) {
+                  const playerTracks = catalogTracksToPlayerTracks(p.tracks || []);
+                  setQueueFromTracks(playerTracks, 0, true);
+                }
+              }}
+              style={{
+                background: p.gradient
+              }}
             >
-              <div className="fig-day-card-inner">
-                <div className="fig-day-meta">
+              <div className="fig-day-card-inner" style={{ minHeight: '180px' }}>
+                <div className="fig-day-meta" style={{ 
+                  marginBottom: '2px',
+                  maxWidth: '100%',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap'
+                }}>
                   {p._count.tracks} треков · {approxDuration(p._count.tracks)}
                 </div>
-                <div className="fig-day-label">Плейлист дня</div>
+                <div className="fig-day-label" style={{ 
+                  marginBottom: '2px',
+                  maxWidth: '100%',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  fontSize: '0.9rem',
+                  lineHeight: '1.2'
+                }}>
+                  {p.name}
+                </div>
                 <div className="fig-day-thumb" aria-hidden />
               </div>
             </button>

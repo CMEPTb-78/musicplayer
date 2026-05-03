@@ -32,6 +32,7 @@ export type PlayerTrack = {
   id: number;
   title: string;
   artist: string;
+  artistId: number;
   durationSec: number;
 };
 
@@ -45,6 +46,7 @@ type PlayerCtx = {
   volume: number;
   recent: PlayerTrack[];
   likedTrackIds: ReadonlySet<number>;
+  catalogTracks: CatalogTrack[];
   toggleLikeTrack: (trackId: number) => void;
   isTrackLiked: (trackId: number) => boolean;
   setQueueFromTracks: (tracks: PlayerTrack[], startIndex?: number, autoplay?: boolean) => void;

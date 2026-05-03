@@ -15,6 +15,7 @@ export function catalogTracksToPlayerTracks(tracks: CatalogTrack[]): PlayerTrack
     id: t.id,
     title: t.title,
     artist: t.artist.name,
+    artistId: t.artist.id,
     durationSec: t.durationSec,
   }));
 }
