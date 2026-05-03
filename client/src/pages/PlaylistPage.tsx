@@ -6,10 +6,8 @@ import { playlistToPlayerTracks } from "@/layout/playlistToPlayerTracks";
 import { usePlayer } from "@/player/PlayerContext";
 import { formatDuration } from "@/utils/format";
 import PlaylistSelector from "@/components/PlaylistSelector";
-import ConfirmDialog from "@/components/ConfirmDialog";
 import TrackActionsMenu from "@/components/TrackActionsMenu";
 import "@/components/PlaylistSelector.css";
-import "@/components/ConfirmDialog.css";
 import "@/components/TrackActionsMenu.css";
 
 function norm(s: string): string {
@@ -19,7 +17,7 @@ function norm(s: string): string {
 export default function PlaylistPage() {
   const { id } = useParams();
   const playlistId = Number(id);
-  const { searchQuery } = useMainLayoutOutlet();
+  const { searchQuery, handleTrackDelete } = useMainLayoutOutlet();
   const [data, setData] = useState<PlaylistDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [selectedTrackId, setSelectedTrackId] = useState<number | null>(null);
@@ -33,15 +31,21 @@ export default function PlaylistPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { setQueueFromTracks, index: qIndex, queue, toggleLikeTrack, isTrackLiked } = usePlayer();
 
-  // Initial check for localStorage data
+  // Reset state and load localStorage data when playlistId changes
   useEffect(() => {
-    if (playlistId) {
+    console.log('Initial localStorage effect - playlistId:', playlistId, 'type:', typeof playlistId);
+    
+    // Reset coverImage when changing playlists
+    setCoverImage(null);
+    
+    if (playlistId && !isNaN(playlistId)) {
       const localCoverImage = localStorage.getItem(`playlist-cover-${playlistId}`);
       const localPlaylistName = localStorage.getItem(`playlist-name-${playlistId}`);
       const localPlaylistDescription = localStorage.getItem(`playlist-description-${playlistId}`);
       
       console.log('Initial localStorage check for playlist', playlistId);
-      console.log('Cover image:', localCoverImage);
+      console.log('Cover image exists:', !!localCoverImage);
+      console.log('Cover image length:', localCoverImage?.length);
       console.log('Name:', localPlaylistName);
       console.log('Description:', localPlaylistDescription);
       
@@ -49,6 +53,8 @@ export default function PlaylistPage() {
         setCoverImage(localCoverImage);
         console.log('Set initial cover image from localStorage');
       }
+    } else {
+      console.log('Invalid playlistId for localStorage check');
     }
   }, [playlistId]);
 
@@ -59,29 +65,15 @@ export default function PlaylistPage() {
       // Try to get cover image from API first, then fallback to localStorage
       const apiCoverImage = data.coverImage;
       const localCoverImage = localStorage.getItem(`playlist-cover-${playlistId}`);
-      const localPlaylistName = localStorage.getItem(`playlist-name-${playlistId}`);
-      const localPlaylistDescription = localStorage.getItem(`playlist-description-${playlistId}`);
       
       console.log('API cover image:', apiCoverImage);
       console.log('Local cover image:', localCoverImage);
-      console.log('Local name:', localPlaylistName);
-      console.log('Local description:', localPlaylistDescription);
       
-      const finalCoverImage = apiCoverImage || localCoverImage;
+      // Only use API cover image if it exists, otherwise keep localStorage or current coverImage
+      const finalCoverImage = apiCoverImage || localCoverImage || coverImage;
       console.log('Setting final cover image:', finalCoverImage);
       
       setCoverImage(finalCoverImage);
-      
-      // Update data with localStorage values if they exist
-      if (localPlaylistName || localPlaylistDescription) {
-        const updatedData = {
-          ...data,
-          name: localPlaylistName || data.name,
-          description: localPlaylistDescription || data.description,
-        };
-        setData(updatedData);
-        console.log('Updated data with localStorage values');
-      }
     }
   }, [data, playlistId]);
 
@@ -98,8 +90,9 @@ export default function PlaylistPage() {
   }, [data, filteredTracks]);
 
   const handleDeleteClick = (trackId: number, trackTitle: string) => {
-    setTrackToDelete({ id: trackId, title: trackTitle });
-    setDeleteConfirmOpen(true);
+    if (handleTrackDelete) {
+      handleTrackDelete(trackId, trackTitle, playlistId);
+    }
   };
 
   const handleConfirmDelete = async () => {
@@ -107,10 +100,15 @@ export default function PlaylistPage() {
     
     try {
       await removeTrackFromPlaylist(playlistId, trackToDelete.id);
-      // Refresh playlist data
-      setData(null);
-      // Trigger playlist update event
+      
+      // Refresh playlist data by triggering a refetch
+      const pl = await fetchPlaylist(playlistId);
+      setData(pl);
+      
+      // Trigger playlist update event to refresh library
       window.dispatchEvent(new CustomEvent('playlist-updated'));
+      
+      console.log('Track deleted and playlist refreshed');
     } catch (err) {
       setError(err instanceof Error ? err.message : "Ошибка удаления трека");
     } finally {
@@ -150,15 +148,102 @@ export default function PlaylistPage() {
     setTrackToDelete(null);
   };
 
+  const getMockAlbumData = (albumId: number): PlaylistDetail => {
+    const albumData: { [key: number]: PlaylistDetail } = {
+      1001: {
+        id: 1001,
+        name: "Midnight Sessions",
+        description: "Intimate late-night recordings from underground artists",
+        coverImage: undefined,
+        isStarter: true,
+        createdAt: new Date().toISOString(),
+        tracks: [
+          { id: 10001, title: "After Hours", popularity: 75, durationSec: 245, audioUrl: "", artist: { id: 2001, name: "Luna Echo" }, position: 1 },
+          { id: 10002, title: "Neon Dreams", popularity: 68, durationSec: 198, audioUrl: "", artist: { id: 2002, name: "Nightwave" }, position: 2 },
+          { id: 10003, title: "City Lights", popularity: 82, durationSec: 267, audioUrl: "", artist: { id: 2003, name: "Urban Pulse" }, position: 3 },
+          { id: 10004, title: "Midnight Blues", popularity: 71, durationSec: 312, audioUrl: "", artist: { id: 2004, name: "Jazz Noir" }, position: 4 },
+          { id: 10005, title: "Silent Streets", popularity: 64, durationSec: 189, audioUrl: "", artist: { id: 2005, name: "Echo Chamber" }, position: 5 },
+        ]
+      },
+      1002: {
+        id: 1002,
+        name: "Urban Legends",
+        description: "Stories from the city streets and underground culture",
+        coverImage: undefined,
+        isStarter: true,
+        createdAt: new Date().toISOString(),
+        tracks: [
+          { id: 10006, title: "Concrete Jungle", popularity: 79, durationSec: 234, audioUrl: "", artist: { id: 2006, name: "Street Poet" }, position: 1 },
+          { id: 10007, title: "Subway Stories", popularity: 73, durationSec: 267, audioUrl: "", artist: { id: 2007, name: "Metro Beats" }, position: 2 },
+          { id: 10008, title: "Rooftop Views", popularity: 85, durationSec: 201, audioUrl: "", artist: { id: 2008, name: "Sky High" }, position: 3 },
+          { id: 10009, title: "Graffiti Nights", popularity: 77, durationSec: 289, audioUrl: "", artist: { id: 2009, name: "Art Attack" }, position: 4 },
+          { id: 10010, title: "Back Alley Blues", popularity: 70, durationSec: 245, audioUrl: "", artist: { id: 2010, name: "Shadow Walker" }, position: 5 },
+        ]
+      },
+      1003: {
+        id: 1003,
+        name: "Acoustic Dreams",
+        description: "Unplugged sessions and intimate performances",
+        coverImage: undefined,
+        isStarter: true,
+        createdAt: new Date().toISOString(),
+        tracks: [
+          { id: 10011, title: "Morning Coffee", popularity: 72, durationSec: 178, audioUrl: "", artist: { id: 2011, name: "Acoustic Soul" }, position: 1 },
+          { id: 10012, title: "Rainy Days", popularity: 80, durationSec: 234, audioUrl: "", artist: { id: 2012, name: "Folk Heart" }, position: 2 },
+          { id: 10013, title: "Sunset Sessions", popularity: 76, durationSec: 267, audioUrl: "", artist: { id: 2013, name: "Golden Hour" }, position: 3 },
+          { id: 10014, title: "Campfire Songs", popularity: 68, durationSec: 198, audioUrl: "", artist: { id: 2014, name: "Woodland Voice" }, position: 4 },
+          { id: 10015, title: "Ocean Waves", popularity: 74, durationSec: 245, audioUrl: "", artist: { id: 2015, name: "Coastal Dreams" }, position: 5 },
+        ]
+      },
+      1004: {
+        id: 1004,
+        name: "Electronic Pulse",
+        description: "High-energy electronic beats and synth melodies",
+        coverImage: undefined,
+        isStarter: true,
+        createdAt: new Date().toISOString(),
+        tracks: [
+          { id: 10016, title: "Digital Sunrise", popularity: 83, durationSec: 256, audioUrl: "", artist: { id: 2016, name: "Synthwave" }, position: 1 },
+          { id: 10017, title: "Binary Dreams", popularity: 78, durationSec: 198, audioUrl: "", artist: { id: 2017, name: "Code Music" }, position: 2 },
+          { id: 10018, title: "Glitch Hop", popularity: 75, durationSec: 234, audioUrl: "", artist: { id: 2018, name: "Pixel Perfect" }, position: 3 },
+          { id: 10019, title: "Neon Nights", popularity: 81, durationSec: 267, audioUrl: "", artist: { id: 2019, name: "Electric Dreams" }, position: 4 },
+          { id: 10020, title: "Cyber Dance", popularity: 72, durationSec: 189, audioUrl: "", artist: { id: 2020, name: "Future Bass" }, position: 5 },
+        ]
+      }
+    };
+    
+    return albumData[albumId] || {
+      id: albumId,
+      name: "Unknown Album",
+      description: "Album details not available",
+      coverImage: undefined,
+      isStarter: true,
+      createdAt: new Date().toISOString(),
+      tracks: []
+    };
+  };
+
   const handleSavePlaylist = async () => {
     if (!data) return;
+    
+    console.log('handleSavePlaylist called');
+    console.log('coverImage:', !!coverImage);
+    console.log('playlistId:', playlistId);
+    console.log('coverImage length:', coverImage?.length);
     
     try {
       // Save all data to localStorage
       if (coverImage) {
+        console.log('Attempting to save cover image to localStorage...');
         localStorage.setItem(`playlist-cover-${playlistId}`, coverImage);
-        console.log('Cover image saved to localStorage');
+        console.log('Cover image saved to localStorage successfully');
+        
+        // Verify it was saved
+        const saved = localStorage.getItem(`playlist-cover-${playlistId}`);
+        console.log('Verification - cover image saved:', !!saved);
+        console.log('Verification - saved length:', saved?.length);
       } else {
+        console.log('No cover image to save, removing existing...');
         localStorage.removeItem(`playlist-cover-${playlistId}`);
         console.log('Cover image removed from localStorage');
       }
@@ -206,10 +291,20 @@ export default function PlaylistPage() {
     (async () => {
       try {
         console.log('Fetching playlist data for ID:', playlistId);
-        const pl = await fetchPlaylist(playlistId);
-        console.log('API response - full playlist data:', pl);
-        console.log('API response - coverImage field:', pl.coverImage);
-        if (!cancelled) setData(pl);
+        
+        // Check if this is an album (ID >= 1001)
+        if (playlistId >= 1001) {
+          // Mock album data
+          const mockAlbumData = getMockAlbumData(playlistId);
+          console.log('Using mock album data:', mockAlbumData);
+          if (!cancelled) setData(mockAlbumData);
+        } else {
+          // Regular playlist data
+          const pl = await fetchPlaylist(playlistId);
+          console.log('API response - full playlist data:', pl);
+          console.log('API response - coverImage field:', pl.coverImage);
+          if (!cancelled) setData(pl);
+        }
       } catch (e) {
         console.error('Error fetching playlist:', e);
         if (!cancelled) setError(e instanceof Error ? e.message : "Ошибка");
@@ -275,9 +370,13 @@ export default function PlaylistPage() {
             }}
           >
             {!coverImage && (
-              <svg width="32" height="32" viewBox="0 0 32 32" fill="rgba(255, 255, 255, 0.5)">
-                <path d="M16 4v8m0 8v-8m-8 0h16"/>
-              </svg>
+              <span style={{
+                color: "rgba(255, 255, 255, 0.5)",
+                fontSize: "0.9rem",
+                fontWeight: "500"
+              }}>
+                Добавить
+              </span>
             )}
             {coverImage && (
               <div
@@ -320,7 +419,14 @@ export default function PlaylistPage() {
                 const reader = new FileReader();
                 reader.onload = (e) => {
                   console.log('File loaded, setting cover image');
-                  setCoverImage(e.target?.result as string);
+                  const result = e.target?.result as string;
+                  setCoverImage(result);
+                  
+                  // Save immediately to localStorage
+                  if (playlistId && result) {
+                    localStorage.setItem(`playlist-cover-${playlistId}`, result);
+                    console.log('Cover image auto-saved to localStorage');
+                  }
                 };
                 reader.readAsDataURL(file);
               }
@@ -330,7 +436,27 @@ export default function PlaylistPage() {
 
         {/* Playlist Info */}
         <div style={{ flex: 1 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "6px" }}>
+          <div 
+            style={{ 
+              display: "flex", 
+              alignItems: "center", 
+              gap: "12px", 
+              marginBottom: "6px",
+              position: "relative"
+            }}
+            onMouseEnter={(e) => {
+              const pencilIcon = e.currentTarget.querySelector('.pencil-icon');
+              if (pencilIcon) {
+                (pencilIcon as HTMLElement).style.opacity = "1";
+              }
+            }}
+            onMouseLeave={(e) => {
+              const pencilIcon = e.currentTarget.querySelector('.pencil-icon');
+              if (pencilIcon) {
+                (pencilIcon as HTMLElement).style.opacity = "0";
+              }
+            }}
+          >
             <h1 style={{ margin: 0, fontSize: "1.35rem", fontWeight: 700, letterSpacing: "-0.02em" }}>
               {data?.name ?? "Плейлист"}
             </h1>
@@ -343,24 +469,24 @@ export default function PlaylistPage() {
                   setEditTitle(data?.name || "");
                   setEditDescription(data?.description || "");
                 }}
+                className="pencil-icon"
                 style={{
-                  width: "32px",
-                  height: "32px",
-                  borderRadius: "50%",
                   border: "none",
-                  backgroundColor: "rgba(255, 255, 255, 0.1)",
-                  color: "#ffffff",
+                  backgroundColor: "transparent",
+                  color: "rgba(255, 255, 255, 0.7)",
                   cursor: "pointer",
+                  padding: "4px",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  transition: "background-color 0.2s ease"
+                  transition: "opacity 0.2s ease, color 0.2s ease",
+                  opacity: "0"
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.2)";
+                  e.currentTarget.style.color = "#ffffff";
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
+                  e.currentTarget.style.color = "rgba(255, 255, 255, 0.7)";
                 }}
                 title="Редактировать плейлист"
               >
@@ -383,21 +509,27 @@ export default function PlaylistPage() {
                 overflow: "hidden",
                 wordBreak: "break-word",
                 whiteSpace: "pre-wrap",
-                cursor: "pointer",
+                cursor: data?.isStarter ? "default" : "pointer",
                 transition: "color 0.2s ease",
                 maxHeight: "5.6em" // 4 lines * 1.4 line height
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.color = "#ffffff";
+                if (!data?.isStarter) {
+                  e.currentTarget.style.color = "#ffffff";
+                }
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.color = "rgba(255, 255, 255, 0.7)";
+                if (!data?.isStarter) {
+                  e.currentTarget.style.color = "rgba(255, 255, 255, 0.7)";
+                }
               }}
               onClick={() => {
-                setIsEditing(true);
-                setEditingMode('description');
-                setEditTitle(data?.name || "");
-                setEditDescription(data?.description || "");
+                if (!data?.isStarter) {
+                  setIsEditing(true);
+                  setEditingMode('description');
+                  setEditTitle(data?.name || "");
+                  setEditDescription(data?.description || "");
+                }
               }}
             >
               {data?.description || "Добавить описание..."}
@@ -411,17 +543,12 @@ export default function PlaylistPage() {
                   value={editTitle}
                   onChange={(e) => setEditTitle(e.target.value)}
                   placeholder="Название плейлиста"
+                  className="playlist-name-input"
                   style={{
-                    backgroundColor: "rgba(255, 255, 255, 0.1)",
-                    border: "1px solid rgba(255, 255, 255, 0.2)",
-                    color: "#ffffff",
-                    padding: "8px 12px",
-                    borderRadius: "6px",
-                    fontSize: "1rem",
-                    width: "100%",
-                    marginBottom: "8px",
+                    border: "none",
                     outline: "none"
                   }}
+                  autoFocus
                 />
               )}
               {editingMode === 'description' && (
@@ -429,54 +556,33 @@ export default function PlaylistPage() {
                   value={editDescription}
                   onChange={(e) => setEditDescription(e.target.value)}
                   placeholder="Добавить описание..."
+                  className="playlist-name-input"
                   style={{
-                    backgroundColor: "rgba(255, 255, 255, 0.1)",
-                    border: "1px solid rgba(255, 255, 255, 0.2)",
-                    color: "#ffffff",
-                    padding: "8px 12px",
-                    borderRadius: "6px",
-                    fontSize: "0.9rem",
-                    lineHeight: "1.4",
-                    width: "100%",
+                    border: "none",
+                    outline: "none",
                     height: "5.6em", // Exactly 4 lines (4 * 1.4)
                     resize: "none",
                     overflow: "hidden",
-                    outline: "none",
-                    fontFamily: "inherit",
                     whiteSpace: "pre-wrap",
-                    verticalAlign: "top"
+                    verticalAlign: "top",
+                    lineHeight: "1.4"
                   }}
+                  autoFocus
                 />
               )}
-              <div style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
+              <div className="create-playlist-actions">
                 <button
                   onClick={() => {
                     setIsEditing(false);
                     setEditingMode(null);
                   }}
-                  style={{
-                    backgroundColor: "rgba(255, 255, 255, 0.1)",
-                    border: "1px solid rgba(255, 255, 255, 0.2)",
-                    color: "#ffffff",
-                    padding: "8px 16px",
-                    borderRadius: "6px",
-                    cursor: "pointer",
-                    fontSize: "0.9rem"
-                  }}
+                  className="cancel-btn"
                 >
                   Отмена
                 </button>
                 <button
                   onClick={handleSavePlaylist}
-                  style={{
-                    backgroundColor: "#1db954",
-                    border: "none",
-                    color: "#ffffff",
-                    padding: "8px 16px",
-                    borderRadius: "6px",
-                    cursor: "pointer",
-                    fontSize: "0.9rem"
-                  }}
+                  className="create-btn"
                 >
                   Сохранить
                 </button>
@@ -518,7 +624,7 @@ export default function PlaylistPage() {
                     onAddToPlaylist={() => setSelectedTrackId(t.id)}
                     onRemoveFromPlaylist={() => handleDeleteClick(t.id, t.title)}
                     onDeletePlaylist={() => {}}
-                    showRemoveOption={true}
+                    showRemoveOption={!data?.isStarter}
                     showDeletePlaylistOption={false}
                   />
                 </span>
@@ -543,18 +649,6 @@ export default function PlaylistPage() {
         />
       )}
       
-      <ConfirmDialog
-        isOpen={deleteConfirmOpen}
-        title={trackToDelete?.id === data?.id ? "Удалить плейлист?" : "Удалить из плейлиста?"}
-        message={trackToDelete?.id === data?.id 
-          ? `Вы уверены, что хотите удалить плейлист "${trackToDelete?.title}"? Это действие нельзя отменить.`
-          : `Вы уверены, что хотите удалить трек "${trackToDelete?.title}" из плейлиста?`}
-        confirmText="Удалить"
-        cancelText="Отмена"
-        onConfirm={trackToDelete?.id === data?.id ? handleConfirmPlaylistDelete : handleConfirmDelete}
-        onCancel={trackToDelete?.id === data?.id ? handleCancelPlaylistDelete : handleCancelDelete}
-        danger={true}
-      />
-    </div>
+          </div>
   );
 }

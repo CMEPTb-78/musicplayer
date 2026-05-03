@@ -116,7 +116,7 @@
   width: 100%;
   padding: 12px 16px;
   background: rgba(255, 255, 255, 0.06);
-  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.1));
+  border: none;
   border-radius: 12px;
   color: #ffffff;
   font-size: 0.95rem;
@@ -131,7 +131,6 @@
 }
 
 .playlist-name-input:focus {
-  border-color: var(--fig-accent-line, rgba(255, 120, 160, 0.45));
   background: rgba(255, 255, 255, 0.08);
 }
 

@@ -274,6 +274,12 @@
   flex: 1 1 auto;
   min-height: 0;
   overflow: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.fig-library-pl-body > .fig-pl-list::-webkit-scrollbar {
+  display: none;
 }
 
 .fig-pl-row {
@@ -388,13 +394,35 @@
   border-color: rgba(255, 140, 170, 0.55);
 }
 
-.fig-lib-album-grid {
+.fig-library-albums {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.fig-library-albums .fig-lib-album-grid {
   list-style: none;
   margin: 0;
   padding: 0;
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(2, 1fr);
   gap: var(--fig-gap-blocks);
+  overflow: auto;
+  flex: 1;
+  min-height: 0;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.fig-library-albums .fig-lib-album-grid li {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.fig-library-albums .fig-lib-album-grid::-webkit-scrollbar {
+  display: none;
 }
 
 .fig-lib-album-card {
@@ -403,14 +431,14 @@
   align-items: stretch;
   gap: 8px;
   width: 100%;
+  height: 100%;
   padding: 0;
   border: none;
-  border-radius: 12px;
-  background: transparent;
-  color: inherit;
+  border-radius: 8px;
+  background: none;
+  color: var(--text);
   cursor: pointer;
-  text-align: left;
-  font: inherit;
+  transition: background 0.2s ease;
 }
 
 .fig-lib-album-cover {
@@ -450,12 +478,13 @@
   min-height: 0;
   height: 100%;
   padding: var(--fig-pad-inner);
+  overflow: visible;
 }
 
 .fig-main-panel > .fig-page-stack {
   flex: 1;
   min-height: 0;
-  overflow: hidden;
+  overflow: visible;
 }
 
 /* контент между шапкой и списком внутри main */
@@ -530,8 +559,22 @@
 
 .fig-moods {
   display: flex;
-  flex-wrap: wrap;
-  gap: var(--fig-gap-el);
+  flex-wrap: nowrap;
+  gap: 8px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  cursor: grab;
+  user-select: none;
+}
+
+.fig-moods::-webkit-scrollbar {
+  display: none;
+}
+
+.fig-moods.dragging {
+  cursor: grabbing;
 }
 
 .fig-mood {
@@ -544,6 +587,7 @@
   color: var(--text);
   cursor: pointer;
   transition: background 0.15s, border-color 0.15s;
+  white-space: nowrap;
 }
 
 .fig-mood:hover,
@@ -895,8 +939,14 @@
   margin: 0;
   padding: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: var(--fig-gap-el);
+}
+
+.fig-dash-album-grid li {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .fig-dash-album-card {
@@ -910,6 +960,43 @@
   cursor: pointer;
   text-align: left;
   font: inherit;
+  height: 100%;
+}
+
+.fig-dash-album-main {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  flex: 1;
+}
+
+.fig-dash-add-album {
+  padding: 6px 12px;
+  border: 1px solid var(--glass-border);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.fig-dash-add-album:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+.fig-dash-add-album:disabled {
+  background: rgba(255, 255, 255, 0.02);
+  color: rgba(255, 255, 255, 0.4);
+  cursor: not-allowed;
 }
 
 .fig-dash-album-cover {
@@ -932,6 +1019,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--fig-gap-el);
+  overflow: visible;
   flex: 1;
   min-height: 0;
 }

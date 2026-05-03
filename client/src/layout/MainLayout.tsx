@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
-import { createPlaylist, deletePlaylist, fetchArtists, fetchPlaylists, type ArtistOption, type PlaylistSummary } from "@/api";
+import { createPlaylist, deletePlaylist, fetchArtists, fetchPlaylists, removeTrackFromPlaylist, type ArtistOption, type PlaylistSummary } from "@/api";
 import {
   IconDiscover,
   IconHeart,
@@ -46,16 +46,24 @@ export default function MainLayout() {
   const [searchQuery, setSearchQuery] = useState("");
   const [catalogArtists, setCatalogArtists] = useState<ArtistOption[] | null>(null);
   const [artistsLoading, setArtistsLoading] = useState(false);
+  const [albums, setAlbums] = useState<PlaylistSummary[]>([]);
+  const [userAlbums, setUserAlbums] = useState<PlaylistSummary[]>([]);
   const [playlistToDelete, setPlaylistToDelete] = useState<PlaylistSummary | null>(null);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [trackToDelete, setTrackToDelete] = useState<{ id: number; title: string; playlistId: number } | null>(null);
+  const [trackDeleteConfirmOpen, setTrackDeleteConfirmOpen] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
       const data = await fetchPlaylists();
       setPlaylists(data);
+      
+      // No albums in library - only available on main page
+      setAlbums([]);
     } catch {
       setPlaylists([]);
+      setAlbums([]);
     } finally {
       setLoading(false);
     }
@@ -125,10 +133,20 @@ export default function MainLayout() {
     
     try {
       await deletePlaylist(playlistToDelete.id);
+      
+      // Check if user is currently in the deleted playlist
+      const currentPath = window.location.pathname;
+      const isCurrentPlaylist = currentPath.includes(`/playlist/${playlistToDelete.id}`);
+      
       // Update playlists list immediately
       setPlaylists(prev => prev.filter(p => p.id !== playlistToDelete.id));
       setDeleteConfirmOpen(false);
       setPlaylistToDelete(null);
+      
+      // Redirect to main page if deleting current playlist
+      if (isCurrentPlaylist) {
+        window.location.href = '/';
+      }
     } catch (e) {
       window.alert(e instanceof Error ? e.message : "Не удалось удалить плейлист");
     }
@@ -139,9 +157,57 @@ export default function MainLayout() {
     setPlaylistToDelete(null);
   };
 
+  const handleTrackDelete = (trackId: number, trackTitle: string, playlistId: number) => {
+    setTrackToDelete({ id: trackId, title: trackTitle, playlistId });
+    setTrackDeleteConfirmOpen(true);
+  };
+
+  const handleConfirmTrackDelete = async () => {
+    if (!trackToDelete) return;
+    
+    try {
+      await removeTrackFromPlaylist(trackToDelete.playlistId, trackToDelete.id);
+      
+      // Trigger playlist update event to refresh the page
+      window.dispatchEvent(new CustomEvent('playlist-updated'));
+      
+      console.log('Track deleted from playlist');
+    } catch (err) {
+      window.alert(err instanceof Error ? err.message : "Не удалось удалить трек");
+    } finally {
+      setTrackDeleteConfirmOpen(false);
+      setTrackToDelete(null);
+    }
+  };
+
+  const handleCancelTrackDelete = () => {
+    setTrackDeleteConfirmOpen(false);
+    setTrackToDelete(null);
+  };
+
+  const handleAddAlbumToLibrary = (album: PlaylistSummary) => {
+    setUserAlbums(prev => {
+      const exists = prev.some(a => a.id === album.id);
+      if (!exists) {
+        return [...prev, album];
+      }
+      return prev;
+    });
+  };
+
+  const isAlbumInLibrary = (albumId: number) => {
+    return userAlbums.some(a => a.id === albumId);
+  };
+
   const outletContext = useMemo<MainLayoutOutletContext>(
-    () => ({ searchQuery, setSearchQuery }),
-    [searchQuery]
+    () => ({ 
+      searchQuery, 
+      setSearchQuery,
+      handleAddAlbumToLibrary,
+      isAlbumInLibrary,
+      handleTrackDelete
+    }),
+    [searchQuery, handleAddAlbumToLibrary, isAlbumInLibrary, handleTrackDelete]
   );
 
   return (
@@ -286,11 +352,11 @@ export default function MainLayout() {
             <div className="fig-library-pl-body fig-library-albums">
               {loading ? (
                 <p className="fig-pl-sub">Загрузка…</p>
-              ) : filteredPlaylists.length === 0 ? (
-                <p className="fig-pl-sub">Нет плейлистов по запросу.</p>
+              ) : userAlbums.length === 0 ? (
+                <p className="fig-pl-sub">Вы еще не добавили альбомы в библиотеку.</p>
               ) : (
                 <ul className="fig-lib-album-grid">
-                  {filteredPlaylists.map((p) => (
+                  {userAlbums.map((p) => (
                     <li key={p.id}>
                       <button
                         type="button"
@@ -459,6 +525,17 @@ export default function MainLayout() {
         cancelText="Отмена"
         onConfirm={handleConfirmDelete}
         onCancel={handleCancelDelete}
+        danger={true}
+      />
+
+      <ConfirmDialog
+        isOpen={trackDeleteConfirmOpen}
+        title="Удалить из плейлиста?"
+        message={`Вы уверены, что хотите удалить трек "${trackToDelete?.title}" из плейлиста?`}
+        confirmText="Удалить"
+        cancelText="Отмена"
+        onConfirm={handleConfirmTrackDelete}
+        onCancel={handleCancelTrackDelete}
         danger={true}
       />
 

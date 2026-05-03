@@ -52,7 +52,12 @@ export default function PlaylistSelector({ trackId, onClose, onTrackAdded }: Pla
     try {
       setAdding(-1); // Use -1 for create operation
       const newPlaylist = await createPlaylist(newPlaylistName.trim());
-      await addTrackToPlaylist(newPlaylist.id, trackId);
+      
+      // Only add track if trackId is valid (not 0)
+      if (trackId && trackId > 0) {
+        await addTrackToPlaylist(newPlaylist.id, trackId);
+      }
+      
       onTrackAdded?.();
       onClose();
     } catch (err) {

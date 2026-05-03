@@ -38,6 +38,56 @@ export default function DashboardPage() {
   const [dashArtists, setDashArtists] = useState<ArtistOption[] | null>(null);
   const [catalogTracks, setCatalogTracks] = useState<CatalogTrack[] | null>(null);
   const [selectedTrackId, setSelectedTrackId] = useState<number | null>(null);
+  const { handleAddAlbumToLibrary, isAlbumInLibrary } = useMainLayoutOutlet();
+
+  // Add drag to scroll functionality for moods container
+  useEffect(() => {
+    const moodsContainer = document.querySelector('.fig-moods') as HTMLElement;
+    if (!moodsContainer) return;
+
+    let isDown = false;
+    let startX: number;
+    let scrollLeft: number;
+
+    const handleMouseDown = (e: Event) => {
+      const mouseEvent = e as MouseEvent;
+      isDown = true;
+      moodsContainer.classList.add('dragging');
+      startX = mouseEvent.pageX - moodsContainer.offsetLeft;
+      scrollLeft = moodsContainer.scrollLeft;
+    };
+
+    const handleMouseLeave = () => {
+      isDown = false;
+      moodsContainer.classList.remove('dragging');
+    };
+
+    const handleMouseUp = () => {
+      isDown = false;
+      moodsContainer.classList.remove('dragging');
+    };
+
+    const handleMouseMove = (e: Event) => {
+      if (!isDown) return;
+      const mouseEvent = e as MouseEvent;
+      mouseEvent.preventDefault();
+      const x = mouseEvent.pageX - moodsContainer.offsetLeft;
+      const walk = (x - startX) * 2; // Adjust scroll speed
+      moodsContainer.scrollLeft = scrollLeft - walk;
+    };
+
+    moodsContainer.addEventListener('mousedown', handleMouseDown);
+    moodsContainer.addEventListener('mouseleave', handleMouseLeave);
+    moodsContainer.addEventListener('mouseup', handleMouseUp);
+    moodsContainer.addEventListener('mousemove', handleMouseMove);
+
+    return () => {
+      moodsContainer.removeEventListener('mousedown', handleMouseDown);
+      moodsContainer.removeEventListener('mouseleave', handleMouseLeave);
+      moodsContainer.removeEventListener('mouseup', handleMouseUp);
+      moodsContainer.removeEventListener('mousemove', handleMouseMove);
+    };
+  }, []);
 
   useEffect(() => {
     const loadPlaylists = async () => {
@@ -167,11 +217,75 @@ export default function DashboardPage() {
   }, [lists, searchQuery]);
 
   const filteredListsForAlbums = useMemo(() => {
-    if (!lists) return [];
+    // Mock albums from other users (not editable)
+    const mockAlbums: PlaylistSummary[] = [
+      { id: 1001, name: "Midnight Sessions", _count: { tracks: 15 }, isStarter: true, createdAt: new Date().toISOString() },
+      { id: 1002, name: "Urban Legends", _count: { tracks: 22 }, isStarter: true, createdAt: new Date().toISOString() },
+      { id: 1003, name: "Acoustic Dreams", _count: { tracks: 18 }, isStarter: true, createdAt: new Date().toISOString() },
+      { id: 1004, name: "Electronic Pulse", _count: { tracks: 31 }, isStarter: true, createdAt: new Date().toISOString() },
+      { id: 1005, name: "Jazz Nights", _count: { tracks: 24 }, isStarter: true, createdAt: new Date().toISOString() },
+      { id: 1006, name: "Rock Revolution", _count: { tracks: 28 }, isStarter: true, createdAt: new Date().toISOString() },
+      { id: 1007, name: "Classical Moods", _count: { tracks: 19 }, isStarter: true, createdAt: new Date().toISOString() },
+      { id: 1008, name: "World Beats", _count: { tracks: 33 }, isStarter: true, createdAt: new Date().toISOString() },
+      { id: 1009, name: "Retro Wave", _count: { tracks: 26 }, isStarter: true, createdAt: new Date().toISOString() },
+      { id: 1010, name: "Future Bass", _count: { tracks: 21 }, isStarter: true, createdAt: new Date().toISOString() },
+      { id: 1011, name: "Soulful Sundays", _count: { tracks: 17 }, isStarter: true, createdAt: new Date().toISOString() },
+      { id: 1012, name: "Metal Mayhem", _count: { tracks: 35 }, isStarter: true, createdAt: new Date().toISOString() },
+    ];
+    
     const q = norm(searchQuery);
-    if (!q) return lists;
-    return lists.filter((p) => norm(p.name).includes(q));
-  }, [lists, searchQuery]);
+    if (!q) return mockAlbums;
+    return mockAlbums.filter((p) => norm(p.name).includes(q));
+  }, [searchQuery]);
+
+  // Mock album details with tracks
+  const mockAlbumDetails = useMemo(() => {
+    return {
+      1001: {
+        id: 1001,
+        name: "Midnight Sessions",
+        description: "Intimate late-night recordings from underground artists",
+        coverImage: null,
+        isStarter: true,
+        tracks: [
+          { id: 10001, title: "After Hours", artist: "Luna Echo", duration: 245, position: 1 },
+          { id: 10002, title: "Neon Dreams", artist: "Nightwave", duration: 198, position: 2 },
+          { id: 10003, title: "City Lights", artist: "Urban Pulse", duration: 267, position: 3 },
+          { id: 10004, title: "Midnight Blues", artist: "Jazz Noir", duration: 312, position: 4 },
+          { id: 10005, title: "Silent Streets", artist: "Echo Chamber", duration: 189, position: 5 },
+        ]
+      },
+      1002: {
+        id: 1002,
+        name: "Urban Legends",
+        description: "Stories from the city streets and underground culture",
+        coverImage: null,
+        isStarter: true,
+        tracks: [
+          { id: 10006, title: "Concrete Jungle", artist: "Street poet", duration: 234, position: 1 },
+          { id: 10007, title: "Subway Stories", artist: "Metro Beats", duration: 267, position: 2 },
+          { id: 10008, title: "Rooftop Views", artist: "Sky High", duration: 201, position: 3 },
+          { id: 10009, title: "Graffiti Nights", artist: "Art Attack", duration: 289, position: 4 },
+          { id: 10010, title: "Back Alley Blues", artist: "Shadow Walker", duration: 245, position: 5 },
+        ]
+      },
+      1003: {
+        id: 1003,
+        name: "Acoustic Dreams",
+        description: "Unplugged sessions and intimate performances",
+        coverImage: null,
+        isStarter: true,
+        tracks: [
+          { id: 10011, title: "Morning Coffee", artist: "Acoustic Soul", duration: 178, position: 1 },
+          { id: 10012, title: "Rainy Days", artist: "Folk Heart", duration: 234, position: 2 },
+          { id: 10013, title: "Sunset Sessions", artist: "Golden Hour", duration: 267, position: 3 },
+          { id: 10014, title: "Campfire Songs", artist: "Woodland Voice", duration: 198, position: 4 },
+          { id: 10015, title: "Ocean Waves", artist: "Coastal Dreams", duration: 245, position: 5 },
+        ]
+      }
+      // Add more albums as needed...
+    };
+  }, []);
 
   const filteredDashArtists = useMemo(() => {
     if (!dashArtists) return [];
@@ -351,7 +465,11 @@ export default function DashboardPage() {
             <ul className="fig-dash-album-grid">
               {filteredListsForAlbums.map((p) => (
                 <li key={p.id}>
-                  <button type="button" className="fig-dash-album-card" onClick={() => navigate(`/playlist/${p.id}`)}>
+                  <button 
+                    type="button" 
+                    className="fig-dash-album-card"
+                    onClick={() => navigate(`/playlist/${p.id}`)}
+                  >
                     <div
                       className="fig-dash-album-cover"
                       style={{
