@@ -85,9 +85,9 @@ export default function TrackActionsMenu({
             <IconHeart filled={isLiked} />
           </span>
           <span className="track-actions-more-btn" onClick={(e) => {
-            e.stopPropagation();
-            setIsDialogOpen(true);
-          }}>
+          e.stopPropagation();
+          onRemoveFromPlaylist();
+        }}>
             <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
               <circle cx="3" cy="8" r="1.5"/>
               <circle cx="8" cy="8" r="1.5"/>
@@ -97,19 +97,6 @@ export default function TrackActionsMenu({
         </button>
       </div>
       
-      {isDialogOpen && createPortal(
-        <ConfirmDialog
-          isOpen={isDialogOpen}
-          title="Действия с треком"
-          message={`Выберите действие для трека "${trackTitle}"`}
-          confirmText="Добавить в плейлист"
-          cancelText="Отмена"
-          onConfirm={() => handleAddClick({} as React.MouseEvent)}
-          onCancel={() => setIsDialogOpen(false)}
-          danger={false}
-        />,
-        document.body
-      )}
-    </>
+          </>
   );
 }

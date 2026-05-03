@@ -14,7 +14,9 @@ import { usePlayer } from "@/player/PlayerContext";
 import PlayerBar from "@/layout/PlayerBar";
 import type { MainLayoutOutletContext } from "@/layout/mainLayoutContext";
 import ConfirmDialog from "@/components/ConfirmDialog";
+import PlaylistSelector from "@/components/PlaylistSelector";
 import "@/components/ConfirmDialog.css";
+import "@/components/PlaylistSelector.css";
 
 type LibTab = "playlists" | "albums" | "artists";
 
@@ -40,6 +42,7 @@ export default function MainLayout() {
   const [loading, setLoading] = useState(true);
   const [libTab, setLibTab] = useState<LibTab>("playlists");
   const [menuOpen, setMenuOpen] = useState(false);
+  const [playlistSelectorOpen, setPlaylistSelectorOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [catalogArtists, setCatalogArtists] = useState<ArtistOption[] | null>(null);
   const [artistsLoading, setArtistsLoading] = useState(false);
@@ -104,15 +107,8 @@ export default function MainLayout() {
     return catalogArtists.filter((a) => norm(a.name).includes(q));
   }, [catalogArtists, searchQuery]);
 
-  async function handleNewPlaylist() {
-    const name = window.prompt("Название плейлиста", "Новый плейлист");
-    if (!name?.trim()) return;
-    try {
-      await createPlaylist(name.trim());
-      await load();
-    } catch (e) {
-      window.alert(e instanceof Error ? e.message : "Не удалось создать плейлист");
-    }
+  function handleNewPlaylist() {
+    setPlaylistSelectorOpen(true);
   }
 
   const handleDeleteClick = (playlist: PlaylistSummary) => {
@@ -465,6 +461,17 @@ export default function MainLayout() {
         onCancel={handleCancelDelete}
         danger={true}
       />
+
+      {playlistSelectorOpen && (
+        <PlaylistSelector
+          trackId={0} // Placeholder track ID for creating playlist without track
+          onClose={() => setPlaylistSelectorOpen(false)}
+          onTrackAdded={() => {
+            setPlaylistSelectorOpen(false);
+            load(); // Refresh playlists after creation
+          }}
+        />
+      )}
 
       <div className="fig-player-slot">
         <PlayerBar />

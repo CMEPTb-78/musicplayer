@@ -67,6 +67,7 @@ export type PlaylistSummary = {
   name: string;
   isStarter: boolean;
   createdAt: string;
+  coverImage?: string;
   _count: { tracks: number };
 };
 
@@ -88,6 +89,8 @@ export type PlaylistDetail = {
   name: string;
   isStarter: boolean;
   createdAt: string;
+  description?: string;
+  coverImage?: string;
   tracks: (CatalogTrack & { position: number })[];
 };
 
@@ -129,9 +132,20 @@ export async function removeTrackFromPlaylist(playlistId: number, trackId: numbe
   });
 }
 
-export async function deletePlaylist(playlistId: number) {
-  return request<{ success: boolean }>(`/api/playlists/${playlistId}`, {
+export async function deletePlaylist(id: number) {
+  return request(`/api/playlists/${id}`, {
     method: "DELETE",
+  });
+}
+
+export async function updatePlaylist(id: number, data: {
+  name?: string;
+  description?: string;
+  coverImage?: string;
+}) {
+  return request<PlaylistDetail>(`/api/playlists/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(data),
   });
 }
 
