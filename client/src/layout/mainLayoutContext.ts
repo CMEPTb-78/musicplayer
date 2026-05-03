@@ -5,6 +5,7 @@ export type MainLayoutOutletContext = {
   searchQuery: string;
   setSearchQuery: (q: string) => void;
   handleAddAlbumToLibrary?: (album: PlaylistSummary) => void;
+  handleRemoveAlbumFromLibrary?: (albumId: number) => void;
   isAlbumInLibrary?: (albumId: number) => boolean;
   handleTrackDelete?: (trackId: number, trackTitle: string, playlistId: number) => void;
 };

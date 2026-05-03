@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, useRef } from "react";
 import { Link, useParams } from "react-router-dom";
-import { fetchPlaylist, removeTrackFromPlaylist, deletePlaylist, updatePlaylist, type PlaylistDetail } from "@/api";
+import { fetchPlaylist, removeTrackFromPlaylist, deletePlaylist, updatePlaylist, type PlaylistDetail, type PlaylistSummary } from "@/api";
+import { IconHeart } from "@/icons/FigIcons";
 import { useMainLayoutOutlet } from "@/layout/mainLayoutContext";
 import { playlistToPlayerTracks } from "@/layout/playlistToPlayerTracks";
 import { usePlayer } from "@/player/PlayerContext";
@@ -17,7 +18,7 @@ function norm(s: string): string {
 export default function PlaylistPage() {
   const { id } = useParams();
   const playlistId = Number(id);
-  const { searchQuery, handleTrackDelete } = useMainLayoutOutlet();
+  const { searchQuery, handleTrackDelete, isAlbumInLibrary, handleAddAlbumToLibrary, handleRemoveAlbumFromLibrary } = useMainLayoutOutlet();
   const [data, setData] = useState<PlaylistDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [selectedTrackId, setSelectedTrackId] = useState<number | null>(null);
@@ -148,13 +149,25 @@ export default function PlaylistPage() {
     setTrackToDelete(null);
   };
 
+  const generateAlbumCover = (albumId: number): string => {
+    // Generate consistent random colors based on album ID
+    const seed = albumId * 47;
+    const hue1 = (seed * 13) % 360;
+    const hue2 = ((seed * 23) % 360) || 210;
+    const saturation = 45 + (seed % 20);
+    const lightness1 = 35 + (seed % 15);
+    const lightness2 = 20 + (seed % 10);
+    
+    return `linear-gradient(135deg, hsl(${hue1}, ${saturation}%, ${lightness1}%), hsl(${hue2}, ${saturation}%, ${lightness2}%))`;
+  };
+
   const getMockAlbumData = (albumId: number): PlaylistDetail => {
     const albumData: { [key: number]: PlaylistDetail } = {
       1001: {
         id: 1001,
         name: "Midnight Sessions",
         description: "Intimate late-night recordings from underground artists",
-        coverImage: undefined,
+        coverImage: generateAlbumCover(1001),
         isStarter: true,
         createdAt: new Date().toISOString(),
         tracks: [
@@ -169,7 +182,7 @@ export default function PlaylistPage() {
         id: 1002,
         name: "Urban Legends",
         description: "Stories from the city streets and underground culture",
-        coverImage: undefined,
+        coverImage: generateAlbumCover(1002),
         isStarter: true,
         createdAt: new Date().toISOString(),
         tracks: [
@@ -184,7 +197,7 @@ export default function PlaylistPage() {
         id: 1003,
         name: "Acoustic Dreams",
         description: "Unplugged sessions and intimate performances",
-        coverImage: undefined,
+        coverImage: generateAlbumCover(1003),
         isStarter: true,
         createdAt: new Date().toISOString(),
         tracks: [
@@ -199,7 +212,7 @@ export default function PlaylistPage() {
         id: 1004,
         name: "Electronic Pulse",
         description: "High-energy electronic beats and synth melodies",
-        coverImage: undefined,
+        coverImage: generateAlbumCover(1004),
         isStarter: true,
         createdAt: new Date().toISOString(),
         tracks: [
@@ -339,8 +352,10 @@ export default function PlaylistPage() {
         <div>
           <div
             onClick={() => {
-              console.log('Cover image clicked');
-              fileInputRef.current?.click();
+              if (!data?.isStarter) {
+                console.log('Cover image clicked');
+                fileInputRef.current?.click();
+              }
             }}
             style={{
               width: "128px",
@@ -350,7 +365,7 @@ export default function PlaylistPage() {
               backgroundImage: coverImage ? `url(${coverImage})` : "none",
               backgroundSize: "cover",
               backgroundPosition: "center",
-              cursor: "pointer",
+              cursor: data?.isStarter ? "default" : "pointer",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -359,17 +374,17 @@ export default function PlaylistPage() {
               overflow: "hidden"
             }}
             onMouseEnter={(e) => {
-              if (!coverImage) {
+              if (!coverImage && !data?.isStarter) {
                 e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.15)";
               }
             }}
             onMouseLeave={(e) => {
-              if (!coverImage) {
+              if (!coverImage && !data?.isStarter) {
                 e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
               }
             }}
           >
-            {!coverImage && (
+            {!coverImage && !data?.isStarter && (
               <span style={{
                 color: "rgba(255, 255, 255, 0.5)",
                 fontSize: "0.9rem",
@@ -378,7 +393,7 @@ export default function PlaylistPage() {
                 Добавить
               </span>
             )}
-            {coverImage && (
+            {coverImage && !data?.isStarter && (
               <div
                 style={{
                   position: "absolute",
@@ -592,6 +607,42 @@ export default function PlaylistPage() {
           <p className="fig-pl-sub" style={{ marginTop: isEditing ? "8px" : "4px" }}>
             {data ? `${data.tracks.length} треков` : "Загрузка…"}
           </p>
+          {data?.isStarter && (
+            <button
+              type="button"
+              className="fig-rc-heart fig-rc-heart-btn"
+              style={{ 
+                marginTop: "6px"
+              }}
+              onClick={() => {
+                if (data) {
+                  const isInLibrary = isAlbumInLibrary?.(data.id);
+                  if (isInLibrary) {
+                    // Remove from library
+                    if (handleRemoveAlbumFromLibrary) {
+                      handleRemoveAlbumFromLibrary(data.id);
+                    }
+                  } else {
+                    // Add to library
+                    if (handleAddAlbumToLibrary) {
+                      const albumSummary: PlaylistSummary = {
+                        id: data.id,
+                        name: data.name,
+                        coverImage: data.coverImage,
+                        isStarter: data.isStarter,
+                        createdAt: data.createdAt,
+                        _count: { tracks: data.tracks.length }
+                      };
+                      handleAddAlbumToLibrary(albumSummary);
+                    }
+                  }
+                }
+              }}
+              aria-label={isAlbumInLibrary?.(data.id) ? "Убрать из библиотеки" : "Добавить в библиотеку"}
+            >
+              <IconHeart filled={isAlbumInLibrary?.(data.id) || false} />
+            </button>
+          )}
         </div>
       </div>
 

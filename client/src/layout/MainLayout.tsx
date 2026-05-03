@@ -195,6 +195,10 @@ export default function MainLayout() {
     });
   };
 
+  const handleRemoveAlbumFromLibrary = (albumId: number) => {
+    setUserAlbums(prev => prev.filter(a => a.id !== albumId));
+  };
+
   const isAlbumInLibrary = (albumId: number) => {
     return userAlbums.some(a => a.id === albumId);
   };
@@ -204,10 +208,11 @@ export default function MainLayout() {
       searchQuery, 
       setSearchQuery,
       handleAddAlbumToLibrary,
+      handleRemoveAlbumFromLibrary,
       isAlbumInLibrary,
       handleTrackDelete
     }),
-    [searchQuery, handleAddAlbumToLibrary, isAlbumInLibrary, handleTrackDelete]
+    [searchQuery, handleAddAlbumToLibrary, handleRemoveAlbumFromLibrary, isAlbumInLibrary, handleTrackDelete]
   );
 
   return (
