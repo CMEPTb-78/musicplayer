@@ -20,6 +20,10 @@ import "@/components/PlaylistSelector.css";
 
 type LibTab = "playlists" | "albums" | "artists";
 
+function getPlaylistCover(playlistId: number): string | undefined {
+  return localStorage.getItem(`playlist-cover-${playlistId}`) || undefined;
+}
+
 function isLikedPlaylistName(name: string): boolean {
   const n = name.toLowerCase();
   return n.includes("избран") || n.includes("liked") || n.includes("любим");
@@ -298,9 +302,20 @@ export default function MainLayout() {
                             style={
                               isLikedPlaylistName(p.name)
                                 ? undefined
-                                : {
-                                    background: `linear-gradient(135deg, hsl(${(p.id * 47) % 360}, 48%, 38%), hsl(${((p.id * 23) % 360) || 210}, 40%, 22%))`,
-                                  }
+                                : (() => {
+                                    const uploadedCover = getPlaylistCover(p.id);
+                                    if (uploadedCover) {
+                                      return {
+                                        backgroundImage: `url(${uploadedCover})`,
+                                        backgroundSize: 'cover',
+                                        backgroundPosition: 'center',
+                                        backgroundRepeat: 'no-repeat'
+                                      };
+                                    }
+                                    return {
+                                      background: `linear-gradient(135deg, hsl(${(p.id * 47) % 360}, 48%, 38%), hsl(${((p.id * 23) % 360) || 210}, 40%, 22%))`,
+                                    };
+                                  })()
                             }
                           >
                             {isLikedPlaylistName(p.name) ? <IconHeart filled /> : null}

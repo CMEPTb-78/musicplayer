@@ -54,6 +54,14 @@ export default function PlaylistPage() {
         setCoverImage(localCoverImage);
         console.log('Set initial cover image from localStorage');
       }
+      
+      if (localPlaylistDescription && data) {
+        setData({
+          ...data,
+          description: localPlaylistDescription
+        });
+        console.log('Set initial description from localStorage:', localPlaylistDescription);
+      }
     } else {
       console.log('Invalid playlistId for localStorage check');
     }
@@ -75,6 +83,16 @@ export default function PlaylistPage() {
       console.log('Setting final cover image:', finalCoverImage);
       
       setCoverImage(finalCoverImage);
+      
+      // Restore description from localStorage if it exists and API doesn't have one
+      const localDescription = localStorage.getItem(`playlist-description-${playlistId}`);
+      if (localDescription && !data.description) {
+        setData(prev => prev ? {
+          ...prev,
+          description: localDescription
+        } : null);
+        console.log('Restored description from localStorage:', localDescription);
+      }
     }
   }, [data, playlistId]);
 
@@ -186,11 +204,11 @@ export default function PlaylistPage() {
         isStarter: true,
         createdAt: new Date().toISOString(),
         tracks: [
-          { id: 10006, title: "Concrete Jungle", popularity: 79, durationSec: 234, audioUrl: "", artist: { id: 2006, name: "Street Poet" }, position: 1 },
-          { id: 10007, title: "Subway Stories", popularity: 73, durationSec: 267, audioUrl: "", artist: { id: 2007, name: "Metro Beats" }, position: 2 },
-          { id: 10008, title: "Rooftop Views", popularity: 85, durationSec: 201, audioUrl: "", artist: { id: 2008, name: "Sky High" }, position: 3 },
-          { id: 10009, title: "Graffiti Nights", popularity: 77, durationSec: 289, audioUrl: "", artist: { id: 2009, name: "Art Attack" }, position: 4 },
-          { id: 10010, title: "Back Alley Blues", popularity: 70, durationSec: 245, audioUrl: "", artist: { id: 2010, name: "Shadow Walker" }, position: 5 },
+          { id: 10006, title: "Concrete Jungle", popularity: 79, durationSec: 234, audioUrl: "", artist: { id: 2006, name: "Street Poet" }, artistId: 2006, position: 1 },
+          { id: 10007, title: "Subway Stories", popularity: 73, durationSec: 267, audioUrl: "", artist: { id: 2007, name: "Metro Beats" }, artistId: 2007, position: 2 },
+          { id: 10008, title: "Rooftop Views", popularity: 85, durationSec: 201, audioUrl: "", artist: { id: 2008, name: "Sky High" }, artistId: 2008, position: 3 },
+          { id: 10009, title: "Graffiti Nights", popularity: 77, durationSec: 289, audioUrl: "", artist: { id: 2009, name: "Art Attack" }, artistId: 2009, position: 4 },
+          { id: 10010, title: "Back Alley Blues", popularity: 70, durationSec: 245, audioUrl: "", artist: { id: 2010, name: "Shadow Walker" }, artistId: 2010, position: 5 },
         ]
       },
       1003: {
@@ -201,11 +219,11 @@ export default function PlaylistPage() {
         isStarter: true,
         createdAt: new Date().toISOString(),
         tracks: [
-          { id: 10011, title: "Morning Coffee", popularity: 72, durationSec: 178, audioUrl: "", artist: { id: 2011, name: "Acoustic Soul" }, position: 1 },
-          { id: 10012, title: "Rainy Days", popularity: 80, durationSec: 234, audioUrl: "", artist: { id: 2012, name: "Folk Heart" }, position: 2 },
-          { id: 10013, title: "Sunset Sessions", popularity: 76, durationSec: 267, audioUrl: "", artist: { id: 2013, name: "Golden Hour" }, position: 3 },
-          { id: 10014, title: "Campfire Songs", popularity: 68, durationSec: 198, audioUrl: "", artist: { id: 2014, name: "Woodland Voice" }, position: 4 },
-          { id: 10015, title: "Ocean Waves", popularity: 74, durationSec: 245, audioUrl: "", artist: { id: 2015, name: "Coastal Dreams" }, position: 5 },
+          { id: 10011, title: "Morning Coffee", popularity: 72, durationSec: 178, audioUrl: "", artist: { id: 2011, name: "Acoustic Soul" }, artistId: 2011, position: 1 },
+          { id: 10012, title: "Rainy Days", popularity: 80, durationSec: 234, audioUrl: "", artist: { id: 2012, name: "Folk Heart" }, artistId: 2012, position: 2 },
+          { id: 10013, title: "Sunset Sessions", popularity: 76, durationSec: 267, audioUrl: "", artist: { id: 2013, name: "Golden Hour" }, artistId: 2013, position: 3 },
+          { id: 10014, title: "Campfire Songs", popularity: 68, durationSec: 198, audioUrl: "", artist: { id: 2014, name: "Woodland Voice" }, artistId: 2014, position: 4 },
+          { id: 10015, title: "Ocean Waves", popularity: 74, durationSec: 245, audioUrl: "", artist: { id: 2015, name: "Coastal Dreams" }, artistId: 2015, position: 5 },
         ]
       },
       1004: {
@@ -216,11 +234,11 @@ export default function PlaylistPage() {
         isStarter: true,
         createdAt: new Date().toISOString(),
         tracks: [
-          { id: 10016, title: "Digital Sunrise", popularity: 83, durationSec: 256, audioUrl: "", artist: { id: 2016, name: "Synthwave" }, position: 1 },
-          { id: 10017, title: "Binary Dreams", popularity: 78, durationSec: 198, audioUrl: "", artist: { id: 2017, name: "Code Music" }, position: 2 },
-          { id: 10018, title: "Glitch Hop", popularity: 75, durationSec: 234, audioUrl: "", artist: { id: 2018, name: "Pixel Perfect" }, position: 3 },
-          { id: 10019, title: "Neon Nights", popularity: 81, durationSec: 267, audioUrl: "", artist: { id: 2019, name: "Electric Dreams" }, position: 4 },
-          { id: 10020, title: "Cyber Dance", popularity: 72, durationSec: 189, audioUrl: "", artist: { id: 2020, name: "Future Bass" }, position: 5 },
+          { id: 10016, title: "Digital Sunrise", popularity: 83, durationSec: 256, audioUrl: "", artist: { id: 2016, name: "Synthwave" }, artistId: 2016, position: 1 },
+          { id: 10017, title: "Binary Dreams", popularity: 78, durationSec: 198, audioUrl: "", artist: { id: 2017, name: "Code Music" }, artistId: 2017, position: 2 },
+          { id: 10018, title: "Glitch Hop", popularity: 75, durationSec: 234, audioUrl: "", artist: { id: 2018, name: "Pixel Perfect" }, artistId: 2018, position: 3 },
+          { id: 10019, title: "Neon Nights", popularity: 81, durationSec: 267, audioUrl: "", artist: { id: 2019, name: "Electric Dreams" }, artistId: 2019, position: 4 },
+          { id: 10020, title: "Cyber Dance", popularity: 72, durationSec: 189, audioUrl: "", artist: { id: 2020, name: "Future Bass" }, artistId: 2020, position: 5 },
         ]
       }
     };
@@ -305,18 +323,23 @@ export default function PlaylistPage() {
       try {
         console.log('Fetching playlist data for ID:', playlistId);
         
-        // Check if this is an album (ID >= 1001)
-        if (playlistId >= 1001) {
-          // Mock album data
-          const mockAlbumData = getMockAlbumData(playlistId);
-          console.log('Using mock album data:', mockAlbumData);
-          if (!cancelled) setData(mockAlbumData);
-        } else {
-          // Regular playlist data
-          const pl = await fetchPlaylist(playlistId);
-          console.log('API response - full playlist data:', pl);
-          console.log('API response - coverImage field:', pl.coverImage);
-          if (!cancelled) setData(pl);
+        // Fetch real playlist data from API
+        try {
+          const playlistData = await fetchPlaylist(playlistId);
+          console.log('Fetched playlist data:', playlistData);
+          if (!cancelled) setData(playlistData);
+        } catch (error) {
+          console.error('Error fetching playlist:', error);
+          if (!cancelled) {
+            // Fallback to mock data for albums (ID >= 1001)
+            if (playlistId >= 1001) {
+              const mockAlbumData = getMockAlbumData(playlistId);
+              console.log('Using mock album data as fallback:', mockAlbumData);
+              setData(mockAlbumData);
+            } else {
+              setError(error instanceof Error ? error.message : "Ошибка");
+            }
+          }
         }
       } catch (e) {
         console.error('Error fetching playlist:', e);
