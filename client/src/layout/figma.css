@@ -1,1806 +1,3612 @@
 /** Макет в стилистике Figma (glassmorphism на фоне) */
 
+
+
 :root {
+
   --glass-bg: rgba(22, 24, 34, 0.55);
+
   --glass-border: rgba(255, 255, 255, 0.1);
+
   --glass-highlight: rgba(255, 255, 255, 0.06);
+
   --fig-pink-start: #ff3d68;
+
   --fig-pink-mid: #ff7aa1;
+
   --fig-accent-line: rgba(255, 120, 160, 0.45);
+
   --thumb-radius: 12px;
+
   --panel-radius: 22px;
+
   --forest-overlay: rgba(12, 10, 20, 0.52);
+
   /* Спека отступов */
+
   --fig-pad-inner: 16px;
+
   --fig-gap-el: 16px;
+
   --fig-gap-blocks: 12px;
+
   /** Между строками в списке треков — без «двойного» разрежения (у строки уже есть padding). */
+
   --fig-track-row-gap: 0px;
+
   /** Сколько строк трека видно без прокрутки (все экраны с .fig-tracks). */
+
   --fig-tracks-visible: 9;
+
   --fig-nav-muted: #8a8983;
+
   --fig-cover-lib-size: 64px;
+
   --fig-cover-lib-radius: 8px;
+
 }
+
+
 
 .fig-layout,
+
 .fig-layout button,
+
 .fig-layout input {
+
   font-family: "Roboto", system-ui, sans-serif;
+
 }
+
+
 
 .app-forest-bg {
+
   position: fixed;
+
   inset: 0;
+
   z-index: 0;
+
   background-color: #0a0e15;
+
   background-image: linear-gradient(var(--forest-overlay), var(--forest-overlay)),
+
     url("https://images.unsplash.com/photo-1542273917363-3b1817f69a2d?auto=format&fit=crop&w=2400&q=80");
+
   background-size: cover;
+
   background-position: center;
+
   pointer-events: none;
+
 }
+
+
 
 .shell--app {
+
   position: relative;
+
   z-index: 1;
+
   padding-top: 1.25rem;
+
   padding-bottom: 1.5rem;
+
   min-height: 100vh;
+
 }
+
+
 
 .glass {
+
   background: var(--glass-bg);
+
   border: 1px solid var(--glass-border);
+
   border-radius: var(--panel-radius);
+
   backdrop-filter: blur(22px);
+
   -webkit-backdrop-filter: blur(22px);
+
   box-shadow: 0 18px 60px rgba(0, 0, 0, 0.35), inset 0 1px 0 var(--glass-highlight);
+
 }
+
+
 
 .fig-layout {
+
   display: grid;
+
   grid-template-columns: minmax(0, 284px) minmax(0, 1fr) 280px;
-  grid-template-rows: minmax(0, 1fr) auto;
+
+  grid-template-rows: minmax(300px, 1fr) auto;
+
   gap: var(--fig-gap-blocks);
+
   align-items: stretch;
+
   min-height: min(78vh, 820px);
+
   height: min(78vh, 820px);
+
 }
+
+
 
 .fig-layout > .fig-col-left {
+
   grid-column: 1;
+
   grid-row: 1;
+
 }
+
+
 
 .fig-layout > .fig-main-panel {
+
   grid-column: 2;
+
   grid-row: 1;
+
 }
+
+
 
 .fig-layout > .fig-col-right {
+
   grid-column: 3;
+
   grid-row: 1;
+
 }
+
+
 
 .fig-layout > .fig-player-slot {
+
   grid-column: 2;
+
   grid-row: 2;
+
   min-width: 0;
+
 }
+
+
 
 @media (max-width: 1100px) {
+
   .fig-layout {
+
     grid-template-columns: 1fr;
+
     grid-template-rows: none;
+
     min-height: auto;
+
   }
+
   .fig-layout > .fig-col-left,
+
   .fig-layout > .fig-main-panel,
+
   .fig-layout > .fig-col-right,
+
   .fig-layout > .fig-player-slot {
+
     grid-column: 1;
+
     grid-row: auto;
+
   }
+
   .fig-col-right {
+
     order: 3;
+
     max-width: none;
+
   }
+
 }
+
+
 
 .fig-col-right {
+
   min-width: 0;
+
   max-width: 280px;
+
   min-height: 0;
+
   display: flex;
+
 }
+
+
 
 .fig-nav-block {
+
   padding: var(--fig-pad-inner);
+
   display: flex;
+
   flex-direction: column;
+
   gap: var(--fig-gap-el);
+
 }
+
+
 
 .fig-nav-link {
+
   display: flex;
+
   align-items: center;
+
   gap: 8px;
+
   padding: 0;
+
   border-radius: 0;
+
   border: none;
+
   background: none;
+
   color: var(--fig-nav-muted);
+
   text-decoration: none;
+
   font-weight: 400;
+
   font-size: 20px;
+
   line-height: 1.2;
+
   transition: color 0.15s;
+
   text-align: left;
+
   cursor: pointer;
+
 }
+
+
 
 .fig-nav-link:hover:not(:disabled) {
+
   background: transparent;
+
   text-decoration: none;
+
   color: #fff;
+
 }
+
+
 
 .fig-nav-link.active {
+
   color: #ffffff;
+
 }
+
+
 
 .fig-nav-link.active svg {
+
   color: #ffffff;
+
 }
+
+
 
 .fig-nav-link svg {
+
   width: 24px;
+
   height: 24px;
+
   flex-shrink: 0;
+
   color: currentColor;
+
 }
+
+
 
 .fig-nav-link:disabled {
+
   color: var(--fig-nav-muted);
+
   cursor: not-allowed;
+
 }
+
+
 
 .fig-library {
+
   padding: var(--fig-pad-inner);
+
   flex: 1;
+
   display: flex;
+
   flex-direction: column;
+
   gap: var(--fig-gap-el);
+
   min-height: 0;
+
 }
+
+
 
 .fig-library-head {
+
   display: flex;
+
   align-items: center;
+
   justify-content: space-between;
+
   gap: var(--fig-gap-el);
+
 }
+
+
 
 .fig-library-title-row {
+
   display: flex;
+
   align-items: center;
+
   gap: 8px;
+
   min-width: 0;
+
 }
+
+
 
 .fig-library-title-row svg {
+
   width: 24px;
+
   height: 24px;
+
   flex-shrink: 0;
+
   color: #ffffff;
+
 }
+
+
 
 .fig-library-title {
+
   font-weight: 400;
+
   font-size: 20px;
+
   line-height: 1.2;
+
   color: #ffffff;
+
 }
+
+
 
 .fig-library-head-search {
+
   display: inline-flex;
+
   align-items: center;
+
   justify-content: center;
+
   flex-shrink: 0;
+
   width: 24px;
+
   height: 24px;
+
   padding: 0;
+
   border: none;
+
   background: none;
+
   color: #ffffff;
+
   cursor: pointer;
+
 }
+
+
 
 .fig-library-head-search svg {
+
   width: 24px;
+
   height: 24px;
+
 }
+
+
 
 .fig-tabs {
+
   display: flex;
+
   gap: var(--fig-gap-el);
+
   flex-wrap: wrap;
+
 }
+
+
 
 .fig-tab {
+
   font-family: inherit;
+
   font-size: 12px;
+
   font-weight: 400;
+
   letter-spacing: normal;
+
   text-transform: none;
+
   padding: 0;
+
   border-radius: 0;
+
   border: none;
+
   border-bottom: 2px solid transparent;
+
   background: transparent;
+
   color: var(--fig-nav-muted);
+
   cursor: pointer;
+
   line-height: 1.2;
+
 }
+
+
 
 .fig-tab.active {
+
   color: #fff;
+
   border-bottom-color: rgba(255, 255, 255, 0.45);
+
 }
+
+
 
 .fig-tab:hover:not(.active) {
+
   color: #cfcfc9;
+
 }
+
+
 
 /* Занимает всё пространство между вкладками и кнопкой «Новый плейлист» */
+
 .fig-library-pl-body {
+
   flex: 1 1 auto;
+
   min-height: 0;
+
   display: flex;
+
   flex-direction: column;
+
 }
+
+
 
 .fig-pl-list {
+
   list-style: none;
+
   margin: 0;
+
   padding: 0;
+
   display: flex;
+
   flex-direction: column;
+
   gap: var(--fig-gap-el);
+
 }
+
+
 
 .fig-library-pl-body > .fig-pl-list {
+
   flex: 1 1 auto;
+
   min-height: 0;
+
   overflow: auto;
+
   scrollbar-width: none;
+
   -ms-overflow-style: none;
+
 }
+
+
 
 .fig-library-pl-body > .fig-pl-list::-webkit-scrollbar {
+
   display: none;
+
 }
+
+
 
 .fig-pl-row {
+
   display: flex;
+
   align-items: center;
+
   gap: 16px;
+
   width: 100%;
+
   padding: 0;
+
   border-radius: 8px;
+
   border: none;
+
   background: transparent;
+
   color: inherit;
+
   cursor: pointer;
+
   text-align: left;
+
   font: inherit;
+
   transition: background 0.12s;
+
 }
+
+
 
 .fig-pl-row:hover {
+
   background: rgba(255, 255, 255, 0.05);
+
 }
+
+
 
 .fig-pl-row.active {
+
   background: rgba(255, 255, 255, 0.08);
+
 }
+
+
 
 /* Обложки только в блоке «Ваша библиотека» */
+
 .fig-cover-lib {
+
   width: var(--fig-cover-lib-size);
+
   height: var(--fig-cover-lib-size);
+
   border-radius: var(--fig-cover-lib-radius);
+
   flex-shrink: 0;
+
   background: linear-gradient(135deg, #4a4e6a, #2a2e44);
+
   display: grid;
+
   place-items: center;
+
   overflow: hidden;
+
 }
+
+
 
 .fig-cover--heart {
+
   background: linear-gradient(145deg, #ff3d7a, #ff8ab0);
+
   color: #fff;
+
 }
+
+
 
 .fig-pl-meta {
+
   min-width: 0;
+
   display: flex;
+
   flex-direction: column;
+
   gap: 8px;
+
 }
+
+
 
 .fig-library .fig-pl-name {
+
   font-weight: 400;
+
   font-size: 20px;
+
   line-height: 1.2;
+
   color: #ffffff;
+
   white-space: nowrap;
+
   overflow: hidden;
+
   text-overflow: ellipsis;
+
 }
+
+
 
 .fig-library .fig-pl-sub {
+
   font-size: 12px;
+
   font-weight: 400;
+
   line-height: 1.2;
+
   color: var(--fig-nav-muted);
+
 }
+
+
 
 .fig-pl-name {
+
   font-weight: 600;
+
   font-size: 0.88rem;
+
   white-space: nowrap;
+
   overflow: hidden;
+
   text-overflow: ellipsis;
+
 }
+
+
 
 .fig-pl-sub {
+
   font-size: 0.75rem;
+
   color: var(--muted);
+
 }
+
+
 
 .fig-library .fig-new-pl {
+
   flex-shrink: 0;
+
   margin-top: 0;
+
 }
+
+
 
 .fig-new-pl {
+
   display: inline-flex;
+
   align-items: center;
+
   justify-content: center;
+
   gap: 8px;
+
   width: 100%;
+
   padding: 0.75rem 1rem;
+
   border-radius: 999px;
+
   border: 1px dashed var(--fig-accent-line);
+
   background: rgba(255, 80, 130, 0.08);
+
   color: #ffc6d6;
+
   font-family: "Roboto", system-ui, sans-serif;
+
   font-size: 14px;
+
   font-weight: 600;
+
   cursor: pointer;
+
   transition: background 0.15s, border-color 0.15s;
+
 }
+
+
 
 .fig-new-pl-icon {
+
   width: 20px;
+
   height: 20px;
+
   flex-shrink: 0;
+
 }
+
+
 
 .fig-new-pl:hover {
+
   background: rgba(255, 80, 130, 0.14);
+
   border-color: rgba(255, 140, 170, 0.55);
+
 }
+
+
 
 .fig-library-albums {
+
   display: flex;
+
   flex-direction: column;
+
   height: 100%;
+
   overflow: hidden;
+
 }
+
+
 
 .fig-library-albums .fig-lib-album-grid {
+
   list-style: none;
+
   margin: 0;
+
   padding: 0;
+
   display: grid;
+
   grid-template-columns: repeat(2, 1fr);
+
   gap: var(--fig-gap-blocks);
+
   overflow: auto;
+
   flex: 1;
+
   min-height: 0;
+
   scrollbar-width: none;
+
   -ms-overflow-style: none;
+
 }
+
+
 
 .fig-library-albums .fig-lib-album-grid li {
+
   display: flex;
+
   flex-direction: column;
+
   height: 100%;
+
 }
+
+
 
 .fig-library-albums .fig-lib-album-grid::-webkit-scrollbar {
+
   display: none;
+
 }
+
+
 
 .fig-lib-album-card {
+
   display: flex;
+
   flex-direction: column;
+
   align-items: stretch;
+
   gap: 8px;
+
   width: 100%;
+
   height: 100%;
+
   padding: 0;
+
   border: none;
+
   border-radius: 8px;
+
   background: none;
+
   color: var(--text);
+
   cursor: pointer;
+
   transition: background 0.2s ease;
+
 }
+
+
 
 .fig-lib-album-cover {
+
   width: 100%;
+
   aspect-ratio: 1;
+
   border-radius: 10px;
+
 }
+
+
 
 .fig-lib-album-meta {
+
   min-width: 0;
+
 }
+
+
 
 .fig-lib-album-name {
+
   font-family: "Roboto", system-ui, sans-serif;
+
   font-size: 14px;
+
   font-weight: 400;
+
   line-height: 1.2;
+
   color: #ffffff;
+
   white-space: nowrap;
+
   overflow: hidden;
+
   text-overflow: ellipsis;
+
 }
+
+
 
 .fig-col-left {
+
   display: flex;
+
   flex-direction: column;
+
   gap: 12px;
+
   min-width: 0;
+
   min-height: 0;
+
 }
+
+
 
 /* Плеер — вторая строка сетки только под центром; боковые колонки не тянутся за него */
+
 .fig-main-panel {
+
   display: flex;
+
   flex-direction: column;
+
   gap: var(--fig-gap-el);
+
   min-height: 0;
+
   height: 100%;
+
   padding: var(--fig-pad-inner);
+
   overflow: visible;
+
 }
+
+
 
 .fig-main-panel > .fig-page-stack {
+
   flex: 1;
+
   min-height: 0;
+
   overflow: visible;
+
 }
+
+
 
 /* контент между шапкой и списком внутри main */
+
 .fig-main-panel > .fig-main-top {
+
   flex-shrink: 0;
+
 }
+
+
 
 .fig-main-top {
+
   display: flex;
+
   align-items: center;
+
   gap: var(--fig-gap-el);
+
 }
+
+
 
 .fig-main-top .fig-user {
+
   margin-left: auto;
+
 }
+
+
 
 .fig-search {
+
   box-sizing: border-box;
+
   width: 420px;
+
   max-width: 100%;
+
   flex: 0 0 auto;
+
   height: 56px;
+
   display: flex;
+
   align-items: center;
+
   gap: 16px;
+
   padding: 0 16px;
+
   border-radius: 16px;
+
   border: 1px solid var(--glass-border);
+
   background: rgba(0, 0, 0, 0.22);
+
 }
+
+
 
 .fig-search svg {
+
   width: 24px;
+
   height: 24px;
+
   flex-shrink: 0;
+
   align-self: center;
+
 }
+
+
 
 .fig-search input {
+
   flex: 1;
+
   min-width: 0;
+
   border: none;
+
   background: transparent;
+
   color: var(--text);
+
   font: inherit;
+
   outline: none;
+
   padding: 0;
+
   line-height: 1.25;
+
 }
+
+
 
 .fig-search input::placeholder {
+
   color: rgba(170, 180, 205, 0.75);
+
 }
+
+
 
 .fig-user {
+
   display: flex;
+
   align-items: center;
+
   gap: 0.45rem;
+
 }
+
+
 
 .fig-avatar {
+
   width: 44px;
+
   height: 44px;
+
   border-radius: 50%;
+
   border: 1px solid var(--glass-border);
+
   background: linear-gradient(135deg, #7c6cff, #3d8bff 55%, #ff6b9d);
+
   cursor: pointer;
+
   padding: 0;
+
   flex-shrink: 0;
+
 }
+
+
 
 .fig-moods {
+
   display: flex;
+
   flex-wrap: nowrap;
+
   gap: 8px;
+
   overflow-x: auto;
+
   -webkit-overflow-scrolling: touch;
+
   scrollbar-width: none;
+
   -ms-overflow-style: none;
+
   cursor: grab;
+
   user-select: none;
+
 }
+
+
 
 .fig-moods::-webkit-scrollbar {
+
   display: none;
+
 }
+
+
 
 .fig-moods.dragging {
+
   cursor: grabbing;
+
 }
+
+
 
 .fig-mood {
+
   font: inherit;
+
   font-size: 0.8rem;
+
   padding: 0.4rem 0.75rem;
+
   border-radius: 999px;
+
   border: 1px solid var(--glass-border);
+
   background: rgba(0, 0, 0, 0.18);
+
   color: var(--text);
+
   cursor: pointer;
+
   transition: background 0.15s, border-color 0.15s;
+
   white-space: nowrap;
+
 }
+
+
 
 .fig-mood:hover,
+
 .fig-mood.active {
+
   background: rgba(255, 255, 255, 0.08);
+
   border-color: rgba(255, 255, 255, 0.16);
+
 }
+
+
 
 .fig-featured {
+
   display: flex;
+
   flex-wrap: wrap;
+
   gap: var(--fig-gap-el);
+
   align-items: flex-start;
+
 }
+
+
 
 .fig-day-card {
+
   box-sizing: border-box;
+
   width: 160px;
+
   height: 160px;
+
   flex: 0 0 auto;
+
   border-radius: 16px;
+
   padding: 0;
+
   border: 1px solid rgba(255, 70, 120, 0.35);
+
   background: linear-gradient(135deg, var(--fig-pink-start), var(--fig-pink-mid) 55%, #a56cff);
+
   color: #fff;
+
   cursor: pointer;
+
   font: inherit;
+
   display: flex;
+
   align-items: center;
+
   justify-content: center;
+
   transition: transform 0.12s, box-shadow 0.12s;
+
   box-shadow: 0 12px 40px rgba(255, 60, 110, 0.25);
+
 }
+
+
 
 .fig-day-card:hover {
+
   transform: translateY(-2px);
+
   box-shadow: 0 16px 48px rgba(255, 60, 110, 0.32);
+
 }
+
+
 
 .fig-day-card-inner {
+
   display: flex;
+
   flex-direction: column;
+
   align-items: center;
+
   justify-content: center;
+
   text-align: center;
+
   max-width: 100%;
+
 }
+
+
 
 .fig-day-meta {
+
   font-family: "Roboto", system-ui, sans-serif;
+
   font-size: 10px;
+
   font-weight: 400;
+
   line-height: 1.2;
+
   color: #d7d7d7;
+
   margin: 0;
+
 }
+
+
 
 .fig-day-label {
+
   margin-top: 8px;
+
   font-family: "Roboto", system-ui, sans-serif;
+
   font-size: 16px;
+
   font-weight: 400;
+
   line-height: 1.2;
+
   color: #ffffff;
+
 }
+
+
 
 .fig-day-thumb {
+
   margin-top: 14px;
+
   width: 80px;
+
   height: 80px;
+
   border-radius: 4px;
+
   background: rgba(0, 0, 0, 0.25);
+
   flex-shrink: 0;
+
 }
+
+
 
 .fig-subtabs {
+
   display: flex;
+
   align-items: flex-end;
+
   gap: var(--fig-gap-el);
+
   flex-wrap: wrap;
+
   padding-top: 4px;
+
 }
+
+
 
 .fig-subtab {
+
   position: relative;
+
   font-family: "Roboto", system-ui, sans-serif;
+
   font-size: 15px;
+
   font-weight: 400;
+
   line-height: 1.2;
+
   color: #8a8983;
+
   background: none;
+
   border: none;
+
   cursor: pointer;
+
   padding: 10px 2px 4px;
+
   margin: 0;
+
 }
+
+
 
 .fig-subtab:hover:not(.active) {
+
   color: #b5b3ad;
+
 }
+
+
 
 .fig-subtab.active {
+
   color: #ffffff;
+
 }
+
+
 
 .fig-subtab.active::before {
+
   content: "";
+
   position: absolute;
+
   top: 0;
+
   left: 0;
+
   right: 0;
+
   height: 2px;
+
   border-radius: 2px;
+
   background: #ffffff;
+
   box-shadow:
+
     0 0 6px rgba(255, 255, 255, 0.95),
+
     0 0 14px rgba(255, 255, 255, 0.55),
+
     0 0 22px rgba(255, 255, 255, 0.25);
+
 }
+
+
 
 /**
+
  * Только эта зона прокручивается: под подвкладками (или под шапкой страницы плейлиста и т.п.).
+
  * Настроение / карточки / «Плейлисты · Артисты · …» остаются на месте.
+
  */
+
 .fig-tab-body {
+
   flex: 1;
+
   min-height: 0;
+
   display: flex;
+
   flex-direction: column;
+
   overflow: hidden;
+
   gap: var(--fig-gap-el);
+
 }
+
+
 
 .fig-tab-body > .error {
+
   flex-shrink: 0;
+
 }
+
+
 
 .fig-tab-body > .fig-dash-grid,
+
 .fig-tab-body > .fig-dash-albums {
+
   flex: 1;
+
   min-height: 0;
+
   overflow-x: hidden;
+
   overflow-y: auto;
+
   scrollbar-width: none;
+
   -ms-overflow-style: none;
+
   overscroll-behavior: contain;
+
 }
+
+
 
 .fig-tab-body > .fig-dash-grid::-webkit-scrollbar,
+
 .fig-tab-body > .fig-dash-albums::-webkit-scrollbar {
+
   width: 0;
+
   height: 0;
+
   display: none;
+
 }
+
+
 
 .fig-tracks {
+
   --fig-track-row-h: 68px;
+
   --fig-tracks-viewport-h: calc(
+
     (var(--fig-track-row-h) * var(--fig-tracks-visible)) +
+
       (var(--fig-track-row-gap) * (var(--fig-tracks-visible) - 1))
+
   );
+
   display: flex;
+
   flex-direction: column;
+
   gap: var(--fig-track-row-gap);
+
   flex: 0 1 auto;
+
   align-self: stretch;
+
   min-width: 0;
+
   min-height: 0;
+
   max-height: var(--fig-tracks-viewport-h);
+
   overflow-x: hidden;
+
   overflow-y: auto;
+
   margin: 0;
+
   padding: 0;
+
   scrollbar-width: none;
+
   -ms-overflow-style: none;
+
   overscroll-behavior: contain;
+
   /** Та же ширина контента, что у шапки: боковые отступы только у .fig-main-panel (16px). */
+
 }
+
+
 
 .fig-tracks::-webkit-scrollbar {
+
   width: 0;
+
   height: 0;
+
   display: none;
+
 }
+
+
 
 .fig-track-row {
+
   display: grid;
+
   grid-template-columns: auto 48px minmax(0, 1fr) auto;
+
   align-items: center;
+
   box-sizing: border-box;
+
   flex-shrink: 0;
+
   height: var(--fig-track-row-h);
+
   min-height: var(--fig-track-row-h);
+
   /** 16px: номер → обложка, обложка → название (+ остальные колонки). */
+
   column-gap: 16px;
+
   padding: 10px 0;
+
   border-radius: 12px;
+
   font-family: "Roboto", system-ui, sans-serif;
+
   font-size: 15px;
+
   font-weight: 400;
+
   line-height: 1.2;
+
   border: none;
+
   background: transparent;
+
   color: #8a8983;
+
   cursor: pointer;
+
   text-align: left;
+
   width: 100%;
+
 }
+
+
 
 .fig-track-row svg {
+
   color: currentColor;
+
 }
+
+
 
 .fig-track-row:hover:not(.active) {
+
   background: rgba(255, 255, 255, 0.04);
+
 }
+
+
 
 .fig-track-row.active {
+
   background: transparent;
+
   color: #ffffff;
+
 }
+
+
 
 .fig-t-num {
+
   font-variant-numeric: tabular-nums;
+
   font-size: 15px;
+
   font-weight: 400;
+
   color: currentColor;
+
 }
+
+
 
 .fig-t-cover {
+
   box-sizing: border-box;
+
   width: 48px;
+
   height: 48px;
+
   border-radius: 4px;
+
   background: linear-gradient(135deg, #39405a, #222838);
+
 }
+
+
 
 .fig-t-meta-row {
+
   display: flex;
+
   flex-direction: row;
+
   align-items: center;
+
   gap: var(--fig-gap-el);
+
   min-width: 0;
+
 }
+
+
 
 .fig-t-title {
+
   flex: 1 1 0;
+
   min-width: 0;
+
   white-space: nowrap;
+
   overflow: hidden;
+
   text-overflow: ellipsis;
+
   font-weight: 400;
+
   color: currentColor;
+
 }
+
+
 
 .fig-t-artist {
+
   flex: 1 1 0;
+
   min-width: 0;
+
   white-space: nowrap;
+
   overflow: hidden;
+
   text-overflow: ellipsis;
+
   font-weight: 400;
+
   font-size: 15px;
+
   color: currentColor;
+
 }
+
+
 
 .fig-t-dur {
+
   flex: 0 0 auto;
+
   margin-left: auto;
+
   font-variant-numeric: tabular-nums;
+
   text-align: right;
+
   font-size: 15px;
+
   font-weight: 400;
+
   color: currentColor;
+
 }
+
+
 
 /* Сердечко и троеточие справа: между иконками 16px, блок у правого края (отступ задаётся padding строки). */
+
 .fig-track-actions {
+
   display: inline-flex;
+
   align-items: center;
+
   justify-content: flex-end;
+
   gap: var(--fig-pad-inner);
+
   flex-shrink: 0;
+
   color: currentColor;
+
 }
+
+
 
 .fig-track-actions svg {
+
   display: block;
+
   flex-shrink: 0;
+
 }
+
+
 
 .fig-track-action-hit {
+
   display: inline-flex;
+
   align-items: center;
+
   justify-content: center;
+
   cursor: pointer;
+
 }
+
+
 
 .fig-dash-artist-list {
+
   list-style: none;
+
   margin: 0;
+
   padding: 0;
+
   display: flex;
+
   flex-direction: column;
+
   gap: var(--fig-gap-blocks);
+
 }
+
+
 
 .fig-dash-artist-row {
+
   display: flex;
+
   align-items: center;
+
   gap: var(--fig-gap-el);
+
   width: 100%;
+
   padding: 10px 0;
+
   border: none;
+
   border-radius: 8px;
+
   background: transparent;
+
   color: inherit;
+
   cursor: pointer;
+
   text-align: left;
+
   font: inherit;
+
   transition: background 0.12s;
+
 }
+
+
 
 .fig-dash-artist-row:hover {
+
   background: rgba(255, 255, 255, 0.05);
+
 }
+
+
 
 .fig-dash-artist-dot {
+
   width: 48px;
+
   height: 48px;
+
   border-radius: 8px;
+
   flex-shrink: 0;
+
 }
+
+
 
 .fig-dash-artist-name {
+
   flex: 1;
+
   min-width: 0;
+
   font-family: "Roboto", system-ui, sans-serif;
+
   font-size: 18px;
+
   font-weight: 400;
+
   color: #ffffff;
+
   white-space: nowrap;
+
   overflow: hidden;
+
   text-overflow: ellipsis;
+
 }
+
+
 
 .fig-dash-album-grid {
+
   list-style: none;
+
   margin: 0;
+
   padding: 0;
+
   display: grid;
+
   grid-template-columns: repeat(3, 1fr);
+
   gap: var(--fig-gap-el);
+
 }
+
+
 
 .fig-dash-album-grid li {
+
   display: flex;
+
   flex-direction: column;
+
   height: 100%;
+
 }
+
+
 
 .fig-dash-album-card {
+
   display: flex;
+
   flex-direction: column;
+
   gap: 8px;
+
   padding: 0;
+
   border: none;
+
   background: transparent;
+
   color: inherit;
+
   cursor: pointer;
+
   text-align: left;
+
   font: inherit;
+
   height: 100%;
+
 }
+
+
 
 .fig-dash-album-main {
+
   display: flex;
+
   flex-direction: column;
+
   gap: 8px;
+
   padding: 0;
+
   border: none;
+
   background: transparent;
+
   color: inherit;
+
   cursor: pointer;
+
   text-align: left;
+
   font: inherit;
+
   flex: 1;
+
 }
+
+
 
 .fig-dash-add-album {
+
   padding: 6px 12px;
+
   border: 1px solid var(--glass-border);
+
   border-radius: 6px;
+
   background: rgba(255, 255, 255, 0.05);
+
   color: rgba(255, 255, 255, 0.8);
+
   font-size: 0.75rem;
+
   cursor: pointer;
+
   transition: all 0.2s ease;
+
 }
+
+
 
 .fig-dash-add-album:hover:not(:disabled) {
+
   background: rgba(255, 255, 255, 0.1);
+
   color: #ffffff;
+
 }
+
+
 
 .fig-dash-add-album:disabled {
+
   background: rgba(255, 255, 255, 0.02);
+
   color: rgba(255, 255, 255, 0.4);
+
   cursor: not-allowed;
+
 }
+
+
 
 .fig-dash-album-cover {
+
   width: 100%;
+
   aspect-ratio: 1;
+
   border-radius: 12px;
+
 }
+
+
 
 .fig-dash-album-title {
+
   font-family: "Roboto", system-ui, sans-serif;
+
   font-size: 14px;
+
   font-weight: 400;
+
   color: #ffffff;
+
   white-space: nowrap;
+
   overflow: hidden;
+
   text-overflow: ellipsis;
+
 }
+
+
 
 .fig-page-stack {
+
   display: flex;
+
   flex-direction: column;
+
   gap: var(--fig-gap-el);
+
   overflow: visible;
+
   flex: 1;
+
   min-height: 0;
+
 }
+
+
 
 /* Контент над списком треков не сжимаем — прокрутка остаётся внутри .fig-tracks */
+
 .fig-page-stack > .fig-moods,
+
 .fig-page-stack > .fig-featured,
+
 .fig-page-stack > .fig-subtabs {
+
   flex-shrink: 0;
+
 }
+
+
 
 .fig-page-stack > div:first-child {
+
   flex-shrink: 0;
+
 }
+
+
 
 .fig-col-right .glass {
+
   box-sizing: border-box;
+
   width: 100%;
+
   height: 100%;
+
   flex: 1;
+
   min-height: 0;
+
   padding: var(--fig-pad-inner);
+
   display: flex;
+
   flex-direction: column;
+
   gap: var(--fig-gap-el);
+
 }
+
+
 
 .fig-rc-head {
+
   display: flex;
+
   align-items: center;
+
   justify-content: space-between;
+
   gap: var(--fig-gap-el);
+
 }
+
+
 
 .fig-rc-title {
+
   font-family: "Roboto", system-ui, sans-serif;
+
   font-size: 16px;
+
   font-weight: 400;
+
   line-height: 1.2;
+
   color: #ffffff;
+
 }
+
+
 
 .fig-rc-all {
+
   font-family: "Roboto", system-ui, sans-serif;
+
   font-size: 12px;
+
   font-weight: 400;
+
   line-height: 1.2;
+
   color: #8a8983;
+
   text-decoration: none;
+
   cursor: pointer;
+
   background: none;
+
   border: none;
+
   padding: 0;
+
 }
+
+
 
 .fig-rc-all:hover {
+
   color: #b5b3ad;
+
   text-decoration: underline;
+
 }
+
+
 
 .fig-rc-list {
+
   list-style: none;
+
   margin: 0;
+
   padding: 0;
+
   flex: 1;
+
   overflow: auto;
+
   display: flex;
+
   flex-direction: column;
+
   gap: var(--fig-gap-el);
+
 }
+
+
 
 /** Строки как в «Ваша библиотека»: обложка 64×64 скр. 8, отступ 16, название/подпись как в блоке библиотеки */
+
 .fig-rc-row {
+
   display: flex;
+
   align-items: center;
+
   gap: 4px;
+
   width: 100%;
+
 }
+
+
 
 .fig-rc-item {
+
   display: flex;
+
   align-items: center;
+
   gap: 16px;
+
   padding: 0;
+
   border-radius: 12px;
+
   border: none;
+
   background: transparent;
+
   cursor: pointer;
+
   width: 100%;
+
   text-align: left;
+
   box-sizing: border-box;
+
 }
+
+
 
 .fig-rc-item-play {
+
   flex: 1;
+
   min-width: 0;
+
 }
+
+
 
 .fig-rc-item:hover {
+
   background: rgba(255, 255, 255, 0.05);
+
 }
+
+
 
 .fig-rc-heart-btn {
+
   flex-shrink: 0;
+
   padding: 8px;
+
   margin: 0;
+
   border: none;
+
   border-radius: 10px;
+
   background: transparent;
+
   cursor: pointer;
+
   color: #8a8983;
+
   transition: color 0.15s, background 0.15s;
+
 }
+
+
 
 .fig-rc-heart-btn:hover {
+
   color: #ffffff;
+
   background: rgba(255, 255, 255, 0.06);
+
 }
+
+
 
 .fig-rc-meta {
+
   flex: 1;
+
   min-width: 0;
+
   display: flex;
+
   flex-direction: column;
+
   gap: 8px;
+
 }
+
+
 
 .fig-rc-track-title {
+
   font-family: "Roboto", system-ui, sans-serif;
+
   font-size: 20px;
+
   font-weight: 400;
+
   line-height: 1.2;
+
   color: #ffffff;
+
   white-space: nowrap;
+
   overflow: hidden;
+
   text-overflow: ellipsis;
+
 }
+
+
 
 .fig-rc-track-artist {
+
   font-family: "Roboto", system-ui, sans-serif;
+
   font-size: 12px;
+
   font-weight: 400;
+
   line-height: 1.2;
+
   color: #8a8983;
+
   white-space: nowrap;
+
   overflow: hidden;
+
   text-overflow: ellipsis;
+
 }
+
+
 
 .fig-rc-heart {
+
   display: flex;
+
   align-items: center;
+
   justify-content: center;
+
   flex-shrink: 0;
+
   color: #8a8983;
+
 }
+
+
 
 .fig-rc-row:hover .fig-rc-heart-btn {
+
   color: #b5b3ad;
+
 }
+
+
 
 .fig-rc-heart svg {
+
   display: block;
+
 }
 
+
+
 .fig-rc-empty {
+
   font-family: "Roboto", system-ui, sans-serif;
+
   font-size: 12px;
+
   font-weight: 400;
+
   line-height: 1.3;
+
   color: #8a8983;
+
   padding: 4px 0;
+
   list-style: none;
+
 }
+
+
 
 /* Плеер — отдельный glass-блок под основной панелью */
 
+
+
 .fig-player {
+
   flex-shrink: 0;
+
 }
+
+
 
 .fig-player-block {
+
   box-sizing: border-box;
+
   padding: var(--fig-pad-inner);
+
   min-height: 90px;
+
   height: 90px;
+
   display: flex;
+
   align-items: center;
+
 }
+
+
 
 .fig-player-inner {
+
   box-sizing: border-box;
+
   border-radius: 0;
+
   border: none;
+
   background: transparent;
+
   backdrop-filter: none;
+
   -webkit-backdrop-filter: none;
+
   padding: 0;
+
   display: grid;
+
   grid-template-columns: minmax(0, 1.05fr) minmax(0, 2.2fr) minmax(0, 1fr);
+
   align-items: center;
+
   gap: 0 var(--fig-gap-blocks);
+
   width: 100%;
+
   min-width: 0;
+
 }
 
+
+
 @media (max-width: 900px) {
+
   .fig-player-block {
+
     height: auto;
+
     min-height: 90px;
+
   }
+
+
 
   .fig-player-inner {
+
     grid-template-columns: 1fr;
+
     gap: 12px;
+
   }
+
 }
+
+
 
 /* Слева: назв. / исполнитель / галочка, по вертикали по центру */
+
 .fig-p-left {
+
   display: flex;
+
   align-items: center;
+
   justify-content: flex-start;
+
   min-width: 0;
+
 }
+
+
 
 .fig-p-text-stack {
+
   display: flex;
+
   flex-direction: column;
+
   align-items: flex-start;
+
   gap: 8px;
+
   min-width: 0;
+
 }
+
+
 
 .fig-p-track-title {
+
   font-family: "Roboto", system-ui, sans-serif;
+
   font-size: 16px;
+
   font-weight: 400;
+
   line-height: 1.2;
+
   color: #ffffff;
+
   white-space: nowrap;
+
   overflow: hidden;
+
   text-overflow: ellipsis;
+
   width: 100%;
+
 }
+
+
 
 .fig-p-meta-row {
+
   display: flex;
+
   align-items: center;
+
   gap: 4px;
+
   min-width: 0;
+
 }
+
+
 
 .fig-p-track-artist {
+
   font-family: "Roboto", system-ui, sans-serif;
+
   font-size: 14px;
+
   font-weight: 400;
+
   line-height: 1.2;
+
   color: #8a8983;
+
   white-space: nowrap;
+
   overflow: hidden;
+
   text-overflow: ellipsis;
+
   min-width: 0;
+
   flex: 1 1 auto;
+
 }
+
+
 
 .fig-p-verified-wrap {
+
   flex-shrink: 0;
+
   display: flex;
+
   align-items: center;
+
 }
+
+
 
 .fig-p-verified-wrap .fig-p-verified {
+
   display: block;
+
   flex-shrink: 0;
+
 }
+
+
 
 /* Центр: транспорт (единый блок) + 12px + полоска трека */
+
 .fig-p-center {
+
   display: flex;
+
   flex-direction: column;
+
   align-items: stretch;
+
   gap: 12px;
+
   min-width: 0;
+
 }
+
+
 
 .fig-p-transport {
+
   display: flex;
+
   align-items: center;
+
   justify-content: center;
+
   gap: 16px;
+
 }
+
+
 
 .fig-p-trans-btn {
+
   display: inline-flex;
+
   align-items: center;
+
   justify-content: center;
+
   padding: 0;
+
   border: none;
+
   background: none;
+
   color: #ffffff;
+
   cursor: pointer;
+
   border-radius: 8px;
+
   transition: opacity 0.15s;
+
 }
+
+
 
 .fig-p-trans-btn:hover {
+
   opacity: 0.85;
+
 }
+
+
 
 .fig-p-ico-prev,
+
 .fig-p-ico-next {
+
   width: 26px;
+
   height: 26px;
+
   display: block;
+
 }
+
+
 
 .fig-p-play {
+
   display: inline-flex;
+
   align-items: center;
+
   justify-content: center;
+
   width: 40px;
+
   height: 40px;
+
   padding: 0;
+
   border: none;
+
   border-radius: 999px;
+
   background: rgba(255, 255, 255, 0.1);
+
   color: #ffffff;
+
   cursor: pointer;
+
   transition: background 0.15s;
+
 }
+
+
 
 .fig-p-play:hover {
+
   background: rgba(255, 255, 255, 0.16);
+
 }
+
+
 
 .fig-p-ico-play {
+
   width: 26px;
+
   height: 26px;
+
   display: block;
+
 }
+
+
 
 .fig-p-progress-wrap {
+
   display: flex;
+
   align-items: center;
+
   gap: 8px;
+
   width: 100%;
+
   min-width: 0;
+
 }
+
+
 
 .fig-p-time {
+
   font-family: "Roboto", system-ui, sans-serif;
+
   font-size: 12px;
+
   font-weight: 400;
+
   line-height: 1.2;
+
   color: #8a8983;
+
   font-variant-numeric: tabular-nums;
+
   flex-shrink: 0;
+
 }
+
+
 
 /* Слайдеры трека и громкости: дорожка #999999, заполнение белым */
+
 .fig-player .fig-p-range {
+
   --p: 0;
+
   -webkit-appearance: none;
+
   appearance: none;
+
   width: 100%;
+
   height: 22px;
+
   margin: 0;
+
   padding: 0;
+
   background: transparent;
+
   cursor: pointer;
+
 }
+
+
 
 .fig-player .fig-p-range:disabled {
+
   opacity: 0.42;
+
   cursor: not-allowed;
+
 }
+
+
 
 .fig-player .fig-p-range:focus {
+
   outline: none;
+
 }
+
+
 
 .fig-player .fig-p-range:focus-visible {
+
   outline: 2px solid rgba(255, 255, 255, 0.35);
+
   outline-offset: 2px;
+
   border-radius: 4px;
+
 }
+
+
 
 .fig-player .fig-p-range::-webkit-slider-runnable-track {
+
   height: 6px;
+
   border-radius: 999px;
+
   background: linear-gradient(
+
     to right,
+
     #ffffff 0%,
+
     #ffffff calc(var(--p, 0) * 100%),
+
     #999999 calc(var(--p, 0) * 100%),
+
     #999999 100%
+
   );
+
 }
+
+
 
 .fig-player .fig-p-range::-webkit-slider-thumb {
+
   -webkit-appearance: none;
+
   appearance: none;
+
   width: 11px;
+
   height: 11px;
+
   margin-top: -2.5px;
+
   border-radius: 50%;
+
   background: #ffffff;
+
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.18);
+
 }
+
+
 
 .fig-player .fig-p-range::-moz-range-track {
+
   height: 6px;
+
   border-radius: 999px;
+
   background: #999999;
+
 }
+
+
 
 .fig-player .fig-p-range::-moz-range-progress {
+
   height: 6px;
+
   border-radius: 999px;
+
   background: #ffffff;
+
 }
+
+
 
 .fig-player .fig-p-range::-moz-range-thumb {
+
   width: 11px;
+
   height: 11px;
+
   border-radius: 50%;
+
   border: none;
+
   background: #ffffff;
+
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.18);
+
 }
+
+
 
 .fig-player .fig-p-range-track {
+
   flex: 1 1 auto;
+
   min-width: 0;
+
   width: auto;
+
 }
+
+
 
 .fig-player .fig-p-range-vol {
+
   flex: 1 1 auto;
+
   min-width: 80px;
+
   max-width: 180px;
+
   width: 100%;
+
 }
+
+
 
 /* Справа: динамик — 16 — громкость — 16 — полноэкран */
+
 .fig-p-right {
+
   display: flex;
+
   align-items: center;
+
   justify-content: flex-end;
+
   gap: 16px;
+
   min-width: 0;
+
 }
+
+
 
 .fig-p-right-vol-icon {
+
   display: flex;
+
   align-items: center;
+
   justify-content: center;
+
 }
+
+
 
 .fig-p-ico-speaker {
+
   width: 20px;
+
   height: 20px;
+
   display: block;
+
 }
+
+
 
 .fig-p-expand {
+
   display: inline-flex;
+
   align-items: center;
+
   justify-content: center;
+
   padding: 0;
+
   border: none;
+
   background: none;
+
   color: #ffffff;
+
   cursor: pointer;
+
   border-radius: 6px;
+
   transition: opacity 0.15s;
+
 }
+
+
 
 .fig-p-expand:hover {
+
   opacity: 0.8;
+
 }
+
+
 
 .fig-p-ico-expand {
+
   width: 18px;
+
   height: 18px;
+
   display: block;
+
 }
 
+
+
 @media (max-width: 900px) {
+
   .fig-player .fig-p-range-vol {
+
     max-width: none;
+
   }
+
 }
+
+
 
 /* ——— Вход и регистрация (как основной glass-интерфейс) ——— */
 
+
+
 .shell--auth {
+
   display: flex;
+
   flex-direction: column;
+
 }
+
+
 
 .auth-shell-header {
+
   display: flex;
+
   align-items: center;
+
   justify-content: space-between;
+
   gap: var(--fig-gap-el);
+
   flex-shrink: 0;
+
   margin-bottom: 0.5rem;
+
 }
+
+
 
 .auth-shell-brand {
+
   font-family: "Roboto", system-ui, sans-serif;
+
   font-weight: 400;
+
   font-size: 20px;
+
   line-height: 1.2;
+
   color: #ffffff;
+
 }
+
+
 
 .auth-shell-meta {
+
   font-family: "Roboto", system-ui, sans-serif;
+
   font-size: 12px;
+
   font-weight: 400;
+
   line-height: 1.3;
+
   color: #8a8983;
+
   text-align: right;
+
 }
+
+
 
 .auth-page {
+
   flex: 1;
+
   display: flex;
+
   flex-direction: column;
+
   align-items: center;
+
   justify-content: center;
+
   min-height: 0;
+
   padding-top: 0.75rem;
+
   padding-bottom: 2rem;
+
 }
+
+
 
 .auth-panel {
+
   width: 100%;
+
   max-width: 440px;
+
   padding: var(--fig-pad-inner);
+
   box-sizing: border-box;
+
 }
+
+
 
 .auth-panel--wide {
+
   max-width: min(640px, 100%);
+
 }
+
+
 
 .auth-step-badge {
+
   font-family: "Roboto", system-ui, sans-serif;
+
   font-size: 12px;
+
   font-weight: 400;
+
   line-height: 1.2;
+
   color: #8a8983;
+
   margin-bottom: 12px;
+
 }
+
+
 
 .auth-title {
+
   font-family: "Roboto", system-ui, sans-serif;
+
   font-size: 22px;
+
   font-weight: 400;
+
   line-height: 1.2;
+
   color: #ffffff;
+
   margin: 0 0 var(--fig-gap-blocks);
+
 }
+
+
 
 .auth-subtitle {
+
   font-family: "Roboto", system-ui, sans-serif;
+
   font-size: 14px;
+
   font-weight: 400;
+
   line-height: 1.4;
+
   color: #8a8983;
+
   margin: 0 0 var(--fig-gap-el);
+
 }
+
+
 
 .auth-error {
+
   font-family: "Roboto", system-ui, sans-serif;
+
   font-size: 14px;
+
   line-height: 1.35;
+
   color: #ffc6d6;
+
   background: rgba(255, 80, 130, 0.1);
+
   border: 1px solid rgba(255, 120, 160, 0.45);
+
   border-radius: 12px;
+
   padding: 12px 14px;
+
   margin-bottom: var(--fig-gap-el);
+
 }
+
+
 
 .auth-form {
+
   display: flex;
+
   flex-direction: column;
+
 }
+
+
 
 .auth-field {
+
   display: flex;
+
   flex-direction: column;
+
   gap: 8px;
+
   margin-bottom: var(--fig-gap-el);
+
 }
+
+
 
 .auth-field:last-of-type {
+
   margin-bottom: 0;
+
 }
+
+
 
 .auth-label {
+
   font-family: "Roboto", system-ui, sans-serif;
+
   font-size: 14px;
+
   font-weight: 400;
+
   line-height: 1.2;
+
   color: #8a8983;
+
 }
+
+
 
 .auth-input {
+
   box-sizing: border-box;
+
   width: 100%;
+
   margin: 0;
+
   padding: 12px 14px;
+
   font-family: "Roboto", system-ui, sans-serif;
+
   font-size: 15px;
+
   font-weight: 400;
+
   line-height: 1.3;
+
   color: #ffffff;
+
   background: rgba(255, 255, 255, 0.06);
+
   border: 1px solid var(--glass-border);
+
   border-radius: 14px;
+
   transition: border-color 0.15s, box-shadow 0.15s;
+
 }
+
+
 
 .auth-input::placeholder {
+
   color: rgba(138, 137, 131, 0.75);
+
 }
+
+
 
 .auth-input:focus {
+
   outline: none;
+
   border-color: rgba(255, 140, 170, 0.55);
+
   box-shadow: 0 0 0 2px rgba(255, 80, 130, 0.12);
+
 }
+
+
 
 .auth-actions {
+
   display: flex;
+
   flex-wrap: wrap;
+
   align-items: center;
+
   gap: var(--fig-gap-blocks);
+
   margin-top: var(--fig-gap-el);
+
 }
+
+
 
 .auth-actions-register {
+
   padding-top: 4px;
+
 }
+
+
 
 .auth-btn-primary {
+
   font-family: "Roboto", system-ui, sans-serif;
+
   font-size: 15px;
+
   font-weight: 600;
+
   line-height: 1.2;
+
   padding: 12px 22px;
+
   border: none;
+
   border-radius: 999px;
+
   cursor: pointer;
+
   color: #ffffff;
+
   background: linear-gradient(135deg, #ff4d79, #c96cff);
+
   box-shadow: 0 8px 28px rgba(255, 80, 140, 0.22);
+
   transition: filter 0.15s, opacity 0.15s;
+
 }
+
+
 
 .auth-btn-primary:hover:not(:disabled) {
+
   filter: brightness(1.06);
+
 }
+
+
 
 .auth-btn-primary:disabled {
+
   opacity: 0.45;
+
   cursor: not-allowed;
+
 }
+
+
 
 .auth-btn-secondary {
+
   font-family: "Roboto", system-ui, sans-serif;
+
   font-size: 14px;
+
   font-weight: 500;
+
   line-height: 1.2;
+
   padding: 10px 18px;
+
   border-radius: 999px;
+
   cursor: pointer;
+
   color: #cfcfc9;
+
   background: rgba(255, 255, 255, 0.06);
+
   border: 1px solid var(--glass-border);
+
   transition: border-color 0.15s, color 0.15s;
+
 }
+
+
 
 .auth-btn-secondary:hover {
+
   color: #ffffff;
+
   border-color: rgba(255, 255, 255, 0.2);
+
 }
+
+
 
 .shell--auth a.auth-link {
+
   font-family: "Roboto", system-ui, sans-serif;
+
   font-size: 14px;
+
   font-weight: 400;
+
   line-height: 1.3;
+
   color: #8a8983;
+
   text-decoration: none;
+
   transition: color 0.15s;
+
 }
+
+
 
 .shell--auth a.auth-link:hover {
+
   color: #ffffff;
+
   text-decoration: none;
+
 }
+
+
 
 .auth-link-inline {
+
   margin-left: auto;
+
 }
+
+
 
 @media (max-width: 520px) {
+
   .auth-link-inline {
+
     margin-left: 0;
+
     flex-basis: 100%;
+
   }
+
 }
+
+
 
 .auth-muted-loading {
+
   font-family: "Roboto", system-ui, sans-serif;
+
   font-size: 14px;
+
   color: #8a8983;
+
   margin: var(--fig-gap-blocks) 0 var(--fig-gap-el);
+
 }
+
+
 
 .auth-artist-grid {
+
   display: grid;
+
   grid-template-columns: repeat(auto-fill, minmax(min(160px, 100%), 1fr));
+
   gap: var(--fig-gap-blocks);
+
   margin-bottom: var(--fig-gap-blocks);
+
   max-height: min(380px, 48vh);
+
   overflow-y: auto;
+
   padding: 4px;
+
   margin-left: -4px;
+
   margin-right: -4px;
+
 }
+
+
 
 .auth-artist-pill {
+
   display: flex;
+
   align-items: center;
+
   justify-content: space-between;
+
   gap: 8px;
+
   padding: 10px 12px;
+
   border-radius: 12px;
+
   border: 1px solid var(--glass-border);
+
   background: rgba(255, 255, 255, 0.05);
+
   color: #ffffff;
+
   cursor: pointer;
+
   text-align: left;
+
   font-family: "Roboto", system-ui, sans-serif;
+
   font-size: 14px;
+
   transition: border-color 0.15s, background 0.15s;
+
 }
+
+
 
 .auth-artist-pill:hover {
+
   background: rgba(255, 255, 255, 0.08);
+
   border-color: rgba(255, 255, 255, 0.14);
+
 }
+
+
 
 .auth-artist-pill.selected {
+
   border-color: rgba(255, 120, 160, 0.55);
+
   background: rgba(255, 80, 130, 0.1);
+
 }
+
+
 
 .auth-artist-name {
+
   min-width: 0;
+
   overflow: hidden;
+
   text-overflow: ellipsis;
+
   white-space: nowrap;
+
 }
 
+
+
 .auth-artist-count {
+
   flex-shrink: 0;
+
   font-family: ui-monospace, "JetBrains Mono", monospace;
+
   font-size: 11px;
+
   font-weight: 500;
+
   line-height: 1.2;
+
   color: #8a8983;
+
   border: 1px solid rgba(255, 255, 255, 0.12);
+
   padding: 2px 6px;
+
   border-radius: 6px;
+
 }
+
